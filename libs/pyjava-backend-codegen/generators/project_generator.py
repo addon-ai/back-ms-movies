@@ -169,3 +169,12 @@ class ProjectGenerator:
         content = self.template_renderer.render_template('maven-wrapper.properties.mustache', mustache_context)
         file_path = wrapper_dir / "maven-wrapper.properties"
         self.file_manager.write_file(file_path, content)
+    
+    def generate_ci_cd_workflow(self, mustache_context: Dict[str, Any]):
+        """Generate GitHub Actions CI/CD workflow."""
+        github_dir = self.output_dir / ".github" / "workflows"
+        self.file_manager.ensure_directory(github_dir)
+        
+        content = self.template_renderer.render_template('project/ci-cd.yml.mustache', mustache_context)
+        file_path = github_dir / "ci-cd.yml"
+        self.file_manager.write_file(file_path, content)

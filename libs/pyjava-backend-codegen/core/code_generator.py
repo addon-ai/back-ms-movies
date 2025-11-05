@@ -217,6 +217,7 @@ class CodeGenerator:
         self.project_generator.generate_docker_compose(self.mustache_context)
         self.project_generator.generate_dockerfile(self.mustache_context)
         self.project_generator.generate_maven_wrapper(self.mustache_context)
+        self.project_generator.generate_ci_cd_workflow(self.mustache_context)
     
     def _group_operations_by_entity(self, all_operations: List[Dict[str, Any]], all_entities: set) -> Dict[str, List[Dict[str, Any]]]:
         """Group operations by entity for consolidated services."""

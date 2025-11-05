@@ -104,4 +104,8 @@ class ConfigLoader:
         if 'maven' in project_config:
             context['maven'] = project_config['maven']
         
+        # Add DevOps configuration
+        if 'devops' in project_config:
+            context['devops'] = project_config['devops']
+        
         return context

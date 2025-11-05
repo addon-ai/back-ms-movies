@@ -55,6 +55,16 @@
                     "ext": 8080
                 }
             }
+        },
+        "devops": {
+            "ci": {
+                "javaVersion": "21",
+                "javaDistribution": "temurin",
+                "artifactName": "user-service-jar",
+                "artifactRetentionDays": 30,
+                "mavenOpts": "-Xmx1024m",
+                "coverageThreshold": "85"
+            }
         }
     },
     {
@@ -112,6 +122,16 @@
                     "int": 8081,
                     "ext": 8081
                 }
+            }
+        },
+        "devops": {
+            "ci": {
+                "javaVersion": "21",
+                "javaDistribution": "temurin",
+                "artifactName": "movie-service-jar",
+                "artifactRetentionDays": 30,
+                "mavenOpts": "-Xmx1024m",
+                "coverageThreshold": "85"
             }
         }
     }
