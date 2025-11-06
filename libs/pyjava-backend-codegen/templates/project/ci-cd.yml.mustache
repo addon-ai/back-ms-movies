@@ -31,51 +31,46 @@ jobs:
       - name: 1. Checkout repository
         uses: actions/checkout@v4
 
-      - name: 2. Set up Java (JDK ${{ env.JAVA_VERSION }})
+      - name: 2. Set up Java (JDK {{devops.ci.javaVersion}})
         uses: actions/setup-java@v4
         with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: '{{devops.ci.javaVersion}}'
+          distribution: '{{devops.ci.javaDistribution}}'
 
       - name: 3. Cache Maven dependencies
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          key: ubuntu-latest-maven-pom-hash
           restore-keys: |
-            ${{ runner.os }}-maven-
+            ubuntu-latest-maven-
 
       - name: 4. Run unit tests
         run: mvn -B test --file pom.xml
         env:
-          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
+          MAVEN_OPTS: '{{devops.ci.mavenOpts}}'
 
       - name: 5. Generate coverage report
         run: mvn -B jacoco:report --file pom.xml
         env:
-          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
+          MAVEN_OPTS: '{{devops.ci.mavenOpts}}'
 
       - name: 6. Check code coverage
         run: mvn -B verify -DskipTests -Djacoco.skip=false --file pom.xml
         env:
-          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
-
-      # - name: 6. Run integration tests
-      #   run: mvn -B verify -DskipUnitTests=true --file pom.xml
-      #   env:
-      #     MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
+          MAVEN_OPTS: '{{devops.ci.mavenOpts}}'
 
       - name: 7. Build and package
         run: mvn -B package -DskipTests --file pom.xml
         env:
-          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
+          MAVEN_OPTS: '{{devops.ci.mavenOpts}}'
 
       - name: 8. Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}
+          name: '{{devops.ci.artifactName}}'
           path: target/*.jar
-          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+          retention-days: {{devops.ci.artifactRetentionDays}}
 
   # ----------------------------------------------------
   # JOB 2: Publish to GitHub Packages
@@ -94,11 +89,11 @@ jobs:
       - name: 1. Checkout repository
         uses: actions/checkout@v4
 
-      - name: 2. Set up Java (JDK ${{ env.JAVA_VERSION }})
+      - name: 2. Set up Java (JDK {{devops.ci.javaVersion}})
         uses: actions/setup-java@v4
         with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          java-version: '{{devops.ci.javaVersion}}'
+          distribution: '{{devops.ci.javaDistribution}}'
           server-id: github
           server-username: GITHUB_ACTOR
           server-password: GITHUB_TOKEN
@@ -107,13 +102,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          key: ubuntu-latest-maven-pom-hash
           restore-keys: |
-            ${{ runner.os }}-maven-
+            ubuntu-latest-maven-
 
       - name: 4. Build and publish to GitHub Packages
         run: mvn -B deploy -DskipTests --file pom.xml
         env:
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MAVEN_OPTS: ${{ env.MAVEN_OPTS }}
+          MAVEN_OPTS: '{{devops.ci.mavenOpts}}'
