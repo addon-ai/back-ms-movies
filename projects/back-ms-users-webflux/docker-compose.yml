@@ -19,7 +19,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./docker/postgres/init:/docker-entrypoint-initdb.d
     networks:
       - back-ms-users-webflux-network
     healthcheck:
@@ -38,10 +37,11 @@ services:
     environment:
       # Force local profile for Docker Compose
       SPRING_PROFILES_ACTIVE: local
-      # Override database host for container networking
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/back-ms-users-webflux_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: password123
+      # Override database URLs for container networking
+      DB_URL: r2dbc:postgresql://postgres:5432/back-ms-users-webflux_db
+      FLYWAY_URL: jdbc:postgresql://postgres:5432/back-ms-users-webflux_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: password123
       # JVM settings for development
       JAVA_OPTS: "-Xmx512m -Xms256m -XX:+UseG1GC"
     ports:

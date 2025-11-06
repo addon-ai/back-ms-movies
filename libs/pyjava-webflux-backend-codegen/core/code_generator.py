@@ -190,6 +190,9 @@ class CodeGenerator:
     
     def _generate_infrastructure_layer(self, all_entities: set, all_schemas: Dict[str, Any], entity_operations: Dict[str, List[Dict[str, Any]]]):
         """Generate infrastructure layer components."""
+        # Generate configuration classes
+        self.infrastructure_generator.generate_flyway_configuration(self.mustache_context)
+        
         # Generate exception classes
         self.infrastructure_generator.generate_conflict_exception(self.mustache_context)
         self.infrastructure_generator.generate_internal_server_error_exception(self.mustache_context)

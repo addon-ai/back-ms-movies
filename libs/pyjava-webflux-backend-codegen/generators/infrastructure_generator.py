@@ -15,6 +15,18 @@ class InfrastructureGenerator:
         self.target_packages = target_packages
         self.output_dir = output_dir
     
+    def generate_flyway_configuration(self, mustache_context: Dict[str, Any]):
+        """Generate FlywayConfiguration class."""
+        context = mustache_context.copy()
+        context.update({
+            'packageName': self.target_packages['infra_config'],
+            'classname': 'FlywayConfiguration'
+        })
+        
+        content = self.template_renderer.render_template('FlywayConfiguration.mustache', context)
+        file_path = self.output_dir / self.file_manager.get_package_path(self.target_packages['infra_config']) / 'FlywayConfiguration.java'
+        self.file_manager.write_file(file_path, content)
+    
     def generate_entity(self, entity: str, schema: Dict[str, Any], mustache_context: Dict[str, Any]):
         """Generate JPA entity (DBO) from OpenAPI schema."""
         context = mustache_context.copy()
