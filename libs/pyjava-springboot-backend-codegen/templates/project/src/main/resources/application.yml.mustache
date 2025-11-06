@@ -4,12 +4,12 @@ spring:
   profiles:
     active: local
   datasource:
-    url: jdbc:postgresql://localhost:5432/{{project.general.name}}_db
-    username: postgres
-    password: password123
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:{{database.sgbd}}://localhost:{{database.port}}/{{project.general.name}}_db
+    username: {{database.username}}
+    password: {{database.password}}
+    driver-class-name: {{database.driverClassName}}
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database-platform: {{database.hibernateDialect}}
     hibernate:
       ddl-auto: update
     show-sql: true
@@ -18,7 +18,7 @@ spring:
         format_sql: true
 
 server:
-  port: 8080
+  port: {{server.port}}
 
 logging:
   level:

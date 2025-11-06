@@ -5,25 +5,32 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database for Local Development
-  postgres:
-    image: postgres:15.0-alpine
-    container_name: {{project.general.name}}-postgres-local
+  # {{database.sgbd}} Database for Local Development
+  {{database.sgbd}}:
+    image: {{database.dockerImage}}
+    container_name: {{project.general.name}}-{{database.sgbd}}-local
     restart: unless-stopped
     environment:
-      POSTGRES_DB: {{project.general.name}}_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password123
-      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+      {{#database.postgresql}}POSTGRES_DB: {{project.general.name}}_db
+      POSTGRES_USER: {{database.username}}
+      POSTGRES_PASSWORD: {{database.password}}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"{{/database.postgresql}}{{#database.mysql}}MYSQL_DATABASE: {{project.general.name}}_db
+      MYSQL_USER: {{database.username}}
+      MYSQL_PASSWORD: {{database.password}}
+      MYSQL_ROOT_PASSWORD: {{database.password}}{{/database.mysql}}{{#database.oracle}}ORACLE_SID: {{project.general.name}}_db
+      ORACLE_PWD: {{database.password}}
+      ORACLE_CHARACTERSET: AL32UTF8{{/database.oracle}}{{#database.sqlserver}}ACCEPT_EULA: Y
+      SA_PASSWORD: {{database.password}}
+      MSSQL_DB: {{project.general.name}}_db{{/database.sqlserver}}
     ports:
-      - "5432:5432"
+      - "{{database.port}}:{{database.port}}"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+      - {{database.sgbd}}_data:/var/lib/{{database.sgbd}}/data
+      - ./docker/{{database.sgbd}}/init:/docker-entrypoint-initdb.d
     networks:
       - {{project.general.name}}-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d {{project.general.name}}_db"]
+      test: {{#database.postgresql}}["CMD-SHELL", "pg_isready -U {{database.username}} -d {{project.general.name}}_db"]{{/database.postgresql}}{{#database.mysql}}["CMD", "mysqladmin", "ping", "-h", "localhost"]{{/database.mysql}}{{#database.oracle}}["CMD-SHELL", "echo 'SELECT 1 FROM DUAL;' | sqlplus -s {{database.username}}/{{database.password}}@localhost:1521/{{project.general.name}}_db"]{{/database.oracle}}{{#database.sqlserver}}["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P {{database.password}} -Q 'SELECT 1'"]{{/database.sqlserver}}
       interval: 10s
       timeout: 5s
       retries: 5
@@ -39,16 +46,16 @@ services:
       # Force local profile for Docker Compose
       SPRING_PROFILES_ACTIVE: local
       # Override database URLs for container networking
-      DB_URL: r2dbc:postgresql://postgres:5432/{{project.general.name}}_db
-      FLYWAY_URL: jdbc:postgresql://postgres:5432/{{project.general.name}}_db
-      DB_USERNAME: postgres
-      DB_PASSWORD: password123
+      DB_URL: r2dbc:{{database.sgbd}}://{{database.sgbd}}:{{database.port}}/{{project.general.name}}_db
+      FLYWAY_URL: jdbc:{{database.sgbd}}://{{database.sgbd}}:{{database.port}}/{{project.general.name}}_db
+      DB_USERNAME: {{database.username}}
+      DB_PASSWORD: {{database.password}}
       # JVM settings for development
       JAVA_OPTS: "-Xmx512m -Xms256m -XX:+UseG1GC"
     ports:
-      - "8080:8080"
+      - "{{server.port}}:{{server.port}}"
     depends_on:
-      postgres:
+      {{database.sgbd}}:
         condition: service_healthy
     networks:
       - {{project.general.name}}-network
@@ -56,14 +63,14 @@ services:
       # Mount logs for debugging
       - ./logs:/app/logs
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:{{server.port}}/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 60s
 
-  # pgAdmin for Database Management (Optional)
-  pgadmin:
+  # Database Management Tool (Optional)
+  {{#database.postgresql}}pgadmin:
     image: dpage/pgadmin4:latest
     container_name: {{project.general.name}}-pgadmin-local
     restart: unless-stopped
@@ -74,14 +81,29 @@ services:
     ports:
       - "5050:80"
     depends_on:
-      - postgres
+      - {{database.sgbd}}
     networks:
       - {{project.general.name}}-network
     profiles:
-      - tools
+      - tools{{/database.postgresql}}{{#database.mysql}}phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: {{project.general.name}}-phpmyadmin-local
+    restart: unless-stopped
+    environment:
+      PMA_HOST: {{database.sgbd}}
+      PMA_USER: {{database.username}}
+      PMA_PASSWORD: {{database.password}}
+    ports:
+      - "5050:80"
+    depends_on:
+      - {{database.sgbd}}
+    networks:
+      - {{project.general.name}}-network
+    profiles:
+      - tools{{/database.mysql}}
 
 volumes:
-  postgres_data:
+  {{database.sgbd}}_data:
     driver: local
 
 networks:

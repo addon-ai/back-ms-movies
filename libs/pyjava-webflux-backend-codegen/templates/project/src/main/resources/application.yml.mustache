@@ -4,17 +4,17 @@ spring:
   profiles:
     active: local
   r2dbc:
-    url: ${DB_URL:r2dbc:postgresql://localhost:5432/{{project.general.name}}_db}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:password123}
+    url: ${DB_URL:r2dbc:{{database.sgbd}}://localhost:{{database.port}}/{{project.general.name}}_db}
+    username: ${DB_USERNAME:{{database.username}}}
+    password: ${DB_PASSWORD:{{database.password}}}
   data:
     r2dbc:
       repositories:
         enabled: true
   flyway:
-    url: ${FLYWAY_URL:jdbc:postgresql://localhost:5432/{{project.general.name}}_db}
-    user: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:password123}
+    url: ${FLYWAY_URL:jdbc:{{database.sgbd}}://localhost:{{database.port}}/{{project.general.name}}_db}
+    user: ${DB_USERNAME:{{database.username}}}
+    password: ${DB_PASSWORD:{{database.password}}}
     locations: classpath:db/migration
     baseline-on-migrate: true
     validate-on-migrate: true
