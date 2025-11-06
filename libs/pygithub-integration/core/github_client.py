@@ -36,9 +36,13 @@ class GitHubClient:
         response = requests.get(url, headers=self.headers)
         return response.status_code == 200
     
-    def create_repository(self, repo_name: str, description: str = "", private: bool = False) -> Dict:
+    def create_repository(self, repo_name: str, description: str = "", private: bool = None) -> Dict:
         """Create a new repository"""
         organization = self.config.get('github', {}).get('organization')
+        
+        # Use private setting from config if not explicitly provided
+        if private is None:
+            private = self.config.get('github', {}).get('repositorySettings', {}).get('private', True)
         
         if organization:
             # Create repository in organization
@@ -54,6 +58,11 @@ class GitHubClient:
             'auto_init': False
         }
         response = requests.post(url, headers=self.headers, json=data)
+        
+        if response.status_code != 201:
+            print(f"Repository creation failed: {response.status_code} - {response.text}")
+            return {}
+        
         return response.json()
     
     def get_user(self) -> Dict:

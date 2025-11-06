@@ -105,11 +105,12 @@ class ProjectSyncGenerator:
     
     def _create_new_repository(self, project_name: str, project_path: str, git_manager: GitManager):
         """Create new repository and push project"""
-        # Create repository on GitHub
-        repo_data = self.github_client.create_repository(
-            project_name, 
-            f"Generated Spring Boot project: {project_name}"
-        )
+        # Get project config for description
+        project_config = self._get_project_config(project_name)
+        description = project_config.get('devops', {}).get('github', {}).get('repositorySettings', {}).get('description', f"Generated Spring Boot project: {project_name}")
+        
+        # Create repository on GitHub (private setting will be read from config)
+        repo_data = self.github_client.create_repository(project_name, description)
         
         remote_url = repo_data.get('clone_url')
         if not remote_url:
