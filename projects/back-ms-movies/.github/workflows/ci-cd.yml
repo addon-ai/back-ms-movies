@@ -1,0 +1,119 @@
+name: Java CI/CD Pipeline
+
+env:
+  JAVA_VERSION: '21'
+  JAVA_DISTRIBUTION: 'temurin'
+  ARTIFACT_NAME: 'movie-service-jar'
+  ARTIFACT_RETENTION_DAYS: 30
+  MAVEN_OPTS: '-Xmx1024m'
+  COVERAGE_THRESHOLD: '85'
+
+on:
+  push:
+    branches: [ "hotfix/*" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "main", "develop", "staging", "test" ]
+
+jobs:
+  # ----------------------------------------------------
+  # JOB 1: Build, Test & Package
+  # ----------------------------------------------------
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: 1. Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 2. Set up Java (JDK $)
+        uses: actions/setup-java@v4
+        with:
+          java-version: $
+          distribution: $
+
+      - name: 3. Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: $-maven-$
+          restore-keys: |
+            $-maven-
+
+      - name: 4. Run unit tests
+        run: mvn -B test --file pom.xml
+        env:
+          MAVEN_OPTS: $
+
+      - name: 5. Generate coverage report
+        run: mvn -B jacoco:report --file pom.xml
+        env:
+          MAVEN_OPTS: $
+
+      - name: 6. Check code coverage
+        run: mvn -B verify -DskipTests -Djacoco.skip=false --file pom.xml
+        env:
+          MAVEN_OPTS: $
+
+      # - name: 6. Run integration tests
+      #   run: mvn -B verify -DskipUnitTests=true --file pom.xml
+      #   env:
+      #     MAVEN_OPTS: $
+
+      - name: 7. Build and package
+        run: mvn -B package -DskipTests --file pom.xml
+        env:
+          MAVEN_OPTS: $
+
+      - name: 8. Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: $
+          path: target/*.jar
+          retention-days: $
+
+  # ----------------------------------------------------
+  # JOB 2: Publish to GitHub Packages
+  # ----------------------------------------------------
+  publish:
+    name: Publish to GitHub Packages
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: 1. Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 2. Set up Java (JDK $)
+        uses: actions/setup-java@v4
+        with:
+          java-version: $
+          distribution: $
+          server-id: github
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
+
+      - name: 3. Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: $-maven-$
+          restore-keys: |
+            $-maven-
+
+      - name: 4. Build and publish to GitHub Packages
+        run: mvn -B deploy -DskipTests --file pom.xml
+        env:
+          GITHUB_ACTOR: $
+          GITHUB_TOKEN: $
+          MAVEN_OPTS: $
