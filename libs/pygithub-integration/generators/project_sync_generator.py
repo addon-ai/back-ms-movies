@@ -137,9 +137,9 @@ class ProjectSyncGenerator:
         # Create feature branch with all project code (PR template already included)
         feature_branch = git_manager.commit_project_code()
         
-        # Setup branch protection only for main branch initially
+        # Setup branch protection for all default branches
         owner = self.github_client.config.get('github', {}).get('organization', 'addon-ai')
-        self.github_client.setup_repository_protection(owner, project_name, ['main'])
+        self.github_client.setup_repository_protection(owner, project_name, default_branches)
         
         print(f"Successfully created {project_name} with feature branch: {feature_branch}")
     
@@ -177,8 +177,8 @@ class ProjectSyncGenerator:
             # Create feature branch with all project code (PR template already included)
             feature_branch = git_manager.commit_project_code()
             
-            # Setup branch protection only for main branch initially
-            self.github_client.setup_repository_protection(owner, project_name, ['main'])
+            # Setup branch protection for all default branches
+            self.github_client.setup_repository_protection(owner, project_name, default_branches)
             
             print(f"Successfully updated {project_name} in branch {feature_branch}")
             
