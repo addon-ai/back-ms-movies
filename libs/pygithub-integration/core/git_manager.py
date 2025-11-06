@@ -89,7 +89,10 @@ class GitManager:
         if not os.path.exists('README.md'):
             self._generate_readme_from_template()
         
+        # Add both README.md and PR template
         subprocess.run(['git', 'add', 'README.md'], check=True)
+        if os.path.exists('.github/PULL_REQUEST_TEMPLATE.md'):
+            subprocess.run(['git', 'add', '.github/PULL_REQUEST_TEMPLATE.md'], check=True)
         subprocess.run(['git', 'commit', '-m', commit_message], check=True)
         subprocess.run(['git', 'push', '-u', 'origin', 'main'], check=True)
     

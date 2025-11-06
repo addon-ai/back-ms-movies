@@ -119,25 +119,22 @@ class ProjectSyncGenerator:
         # Initialize git repository
         git_manager.init_repository(project_name)
         
-        # Initial commit and push to main branch
+        # Include PR template locally in project BEFORE initial commit
+        self._include_pr_template_locally(project_path)
+        
+        # Initial commit and push to main branch (includes README.md and PR template)
         git_manager.initial_commit_and_push("Initial commit: Generated Spring Boot project")
         
         # Get default branches from project config
         project_config = self._get_project_config(project_name)
         default_branches = project_config.get('devops', {}).get('github', {}).get('defaultBranches', ['develop', 'test', 'staging', 'main'])
         
-        # Create and push additional branches (empty with only README.md)
+        # Create and push additional branches (with README.md and PR template)
         branches_to_create = [b for b in default_branches if b != 'main']  # Exclude main as it already exists
         git_manager.create_branches(branches_to_create)
         
-        # Create feature branch with all project code
+        # Create feature branch with all project code (PR template already included)
         feature_branch = git_manager.commit_project_code()
-        
-        # Include PR template locally in project AFTER code generation
-        self._include_pr_template_locally(project_path)
-        
-        # Commit PR template to feature branch
-        self._commit_pr_template(git_manager, feature_branch)
         
         # Setup branch protection for default branches AFTER PR template
         owner = self.github_client.config.get('github', {}).get('organization', 'addon-ai')
@@ -164,6 +161,9 @@ class ProjectSyncGenerator:
             # Regenerate project using code generator
             self._regenerate_project(project_name, project_path)
             
+            # Include PR template locally in project AFTER regeneration
+            self._include_pr_template_locally(project_path)
+            
             # Restore git history
             if backup_dir:
                 git_manager.restore_git_history(backup_dir)
@@ -173,14 +173,8 @@ class ProjectSyncGenerator:
             default_branches = project_config.get('devops', {}).get('github', {}).get('defaultBranches', ['develop', 'test', 'staging', 'main'])
             owner = self.github_client.config.get('github', {}).get('organization', 'addon-ai')
             
-            # Create feature branch with all project code
+            # Create feature branch with all project code (PR template already included)
             feature_branch = git_manager.commit_project_code()
-            
-            # Include PR template locally in project AFTER code generation
-            self._include_pr_template_locally(project_path)
-            
-            # Commit PR template to feature branch
-            self._commit_pr_template(git_manager, feature_branch)
             
             # Setup branch protection for default branches AFTER PR template
             self.github_client.setup_repository_protection(owner, project_name, default_branches)
