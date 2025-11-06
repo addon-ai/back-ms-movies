@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: back-ms-users-webflux
+  profiles:
+    active: local
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/back-ms-users-webflux_db
+    username: postgres
+    password: password123
+  data:
+    r2dbc:
+      repositories:
+        enabled: true
+  sql:
+    init:
+      mode: always
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: DEBUG
+    org.springframework.security: DEBUG
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    try-it-out-enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always

@@ -1,0 +1,89 @@
+# Docker Compose for Local Development Only
+# This file is designed for local development with hardcoded values
+# For other environments, use Kubernetes, Docker Swarm, or cloud services
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database for Local Development
+  postgres:
+    image: postgres:15.0-alpine
+    container_name: back-ms-users-postgres-local
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: back-ms-users_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+    networks:
+      - back-ms-users-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d back-ms-users_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Application Service (Local Profile)
+  back-ms-users-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: back-ms-users-app-local
+    restart: unless-stopped
+    environment:
+      # Force local profile for Docker Compose
+      SPRING_PROFILES_ACTIVE: local
+      # Override database host for container networking
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/back-ms-users_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password123
+      # JVM settings for development
+      JAVA_OPTS: "-Xmx512m -Xms256m -XX:+UseG1GC"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - back-ms-users-network
+    volumes:
+      # Mount logs for debugging
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # pgAdmin for Database Management (Optional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: back-ms-users-pgadmin-local
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@back-ms-users.local
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - back-ms-users-network
+    profiles:
+      - tools
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  back-ms-users-network:
+    driver: bridge
+    name: back-ms-users-local-network
