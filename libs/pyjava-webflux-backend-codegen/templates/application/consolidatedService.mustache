@@ -124,7 +124,9 @@ public class {{entityName}}Service implements {{entityName}}UseCase {
                 .collectList()
                 .map({{entityVarName}}s -> {
                     logger.info("Retrieved {} {{entityVarName}}s successfully", {{entityVarName}}s.size());
-                    return {{entityVarName}}Mapper.toListResponse({{entityVarName}}s, page != null ? page : 1, size != null ? size : 20);
+                    int pageNum = page != null ? page : 1;
+                    int pageSize = size != null ? size : 20;
+                    return {{entityVarName}}Mapper.toListResponse({{entityVarName}}s, pageNum, pageSize);
                 })
                 .doOnError(e -> logger.error("Error in List{{entityName}}s", e));
     }
