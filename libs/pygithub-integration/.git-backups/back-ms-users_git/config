@@ -11,6 +11,18 @@
 [remote "origin"]
 	url = git@github.com:addon-ai/back-ms-users.git
 	fetch = +refs/heads/*:refs/remotes/origin/*
-[branch "feature/push_automatic_20251105_194418"]
+[branch "main"]
 	remote = origin
-	merge = refs/heads/feature/push_automatic_20251105_194418
+	merge = refs/heads/main
+[branch "develop"]
+	remote = origin
+	merge = refs/heads/develop
+[branch "test"]
+	remote = origin
+	merge = refs/heads/test
+[branch "staging"]
+	remote = origin
+	merge = refs/heads/staging
+[branch "feature/push_automatic_20251106_110525"]
+	remote = origin
+	merge = refs/heads/feature/push_automatic_20251106_110525

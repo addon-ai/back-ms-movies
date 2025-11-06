@@ -128,6 +128,12 @@ class GitManager:
         """Create feature branch with all project code"""
         os.chdir(self.project_path)
         
+        # Commit any pending changes before checkout
+        subprocess.run(['git', 'add', '.', '--force'], check=False)
+        result = subprocess.run(['git', 'diff', '--cached', '--quiet'], capture_output=True)
+        if result.returncode != 0:
+            subprocess.run(['git', 'commit', '-m', 'Auto-commit pending changes'], check=False)
+        
         # Create feature branch from main
         feature_branch = self.get_feature_branch_name()
         subprocess.run(['git', 'checkout', 'main'], check=True)

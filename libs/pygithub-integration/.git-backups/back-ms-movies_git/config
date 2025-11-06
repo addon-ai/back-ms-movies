@@ -23,3 +23,6 @@
 [branch "staging"]
 	remote = origin
 	merge = refs/heads/staging
+[branch "feature/push_automatic_20251106_110541"]
+	remote = origin
+	merge = refs/heads/feature/push_automatic_20251106_110541

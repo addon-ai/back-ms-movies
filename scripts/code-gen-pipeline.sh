@@ -121,7 +121,7 @@ if [ -n "$GITHUB_TOKEN" ]; then
     echo "✅ GitHub synchronization complete"
     
     echo "🔒 Applying branch protection rules..."
-    python3 "$PROJECT_ROOT/scripts/apply-branch-protection.py"
+    python3 "$PROJECT_ROOT/libs/pygithub-integration/apply_branch_protection.py"
     echo "✅ Branch protection applied"
 else
     echo "⚠️  GITHUB_TOKEN not set. Skipping GitHub synchronization."
