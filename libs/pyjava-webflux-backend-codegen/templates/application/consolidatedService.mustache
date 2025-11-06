@@ -20,10 +20,8 @@ import {{infra_config_exceptions}}.NotFoundException;
 import {{utils}}.LoggingUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-{{#hasList}}
-import java.util.List;
-{{/hasList}}
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 /**
  * Consolidated application service implementing all {{entityName}} use cases.
@@ -33,7 +31,6 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class {{entityName}}Service implements {{entityName}}UseCase {
 
     private static final LoggingUtils logger = LoggingUtils.getLogger({{entityName}}Service.class);
@@ -43,113 +40,93 @@ public class {{entityName}}Service implements {{entityName}}UseCase {
 
 {{#hasCreate}}
     @Override
-    public Create{{entityName}}ResponseContent create(Create{{entityName}}RequestContent request) {
+    public Mono<Create{{entityName}}ResponseContent> create(Create{{entityName}}RequestContent request) {
         logger.info("Executing Create{{entityName}} with request: {}", request);
         
-        try {
-            {{entityName}} {{entityVarName}} = {{entityVarName}}Mapper.fromCreateRequest(request);
-            {{entityName}} saved{{entityName}} = {{entityVarName}}RepositoryPort.save({{entityVarName}});
-            logger.info("{{entityName}} created successfully with ID: {}", saved{{entityName}}.get{{entityName}}Id());
-            return {{entityVarName}}Mapper.toCreateResponse(saved{{entityName}});
-        } catch (Exception e) {
-            logger.error("Error in Create{{entityName}}", e, request);
-            throw e;
-        }
+        return Mono.fromCallable(() -> {{entityVarName}}Mapper.fromCreateRequest(request))
+                .flatMap({{entityVarName}}RepositoryPort::save)
+                .map(saved{{entityName}} -> {
+                    logger.info("{{entityName}} created successfully with ID: {}", saved{{entityName}}.get{{entityName}}Id());
+                    return {{entityVarName}}Mapper.toCreateResponse(saved{{entityName}});
+                })
+                .doOnError(e -> logger.error("Error in Create{{entityName}}", e, request));
     }
 {{/hasCreate}}
 
 {{#hasGet}}
     @Override
-    public Get{{entityName}}ResponseContent get(String {{entityVarName}}Id) {
+    public Mono<Get{{entityName}}ResponseContent> get(String {{entityVarName}}Id) {
         logger.info("Executing Get{{entityName}} with {{entityVarName}}Id: {}", {{entityVarName}}Id);
         
-        try {
-            {{entityName}} {{entityVarName}} = {{entityVarName}}RepositoryPort.findById({{entityVarName}}Id)
-                .orElseThrow(() -> new NotFoundException("{{entityName}} not found"));
-            
-            logger.info("{{entityName}} retrieved successfully with ID: {}", {{entityVarName}}Id);
-            return {{entityVarName}}Mapper.toGetResponse({{entityVarName}});
-        } catch (NotFoundException e) {
-            logger.error("{{entityName}} not found in Get{{entityName}}", e, {{entityVarName}}Id);
-            throw e;
-        } catch (Exception e) {
-            logger.error("Error in Get{{entityName}}", e, {{entityVarName}}Id);
-            throw e;
-        }
+        return {{entityVarName}}RepositoryPort.findById({{entityVarName}}Id)
+                .switchIfEmpty(Mono.error(new NotFoundException("{{entityName}} not found")))
+                .map({{entityVarName}} -> {
+                    logger.info("{{entityName}} retrieved successfully with ID: {}", {{entityVarName}}Id);
+                    return {{entityVarName}}Mapper.toGetResponse({{entityVarName}});
+                })
+                .doOnError(e -> logger.error("Error in Get{{entityName}}", e, {{entityVarName}}Id));
     }
 {{/hasGet}}
 
 {{#hasUpdate}}
     @Override
-    public Update{{entityName}}ResponseContent update(String {{entityVarName}}Id, Update{{entityName}}RequestContent request) {
+    public Mono<Update{{entityName}}ResponseContent> update(String {{entityVarName}}Id, Update{{entityName}}RequestContent request) {
         logger.info("Executing Update{{entityName}} with {{entityVarName}}Id: {} and request: {}", {{entityVarName}}Id, request);
         
-        try {
-            {{entityName}} existing{{entityName}} = {{entityVarName}}RepositoryPort.findById({{entityVarName}}Id)
-                .orElseThrow(() -> new NotFoundException("{{entityName}} not found"));
-            
-            // Merge request data into existing entity
-            {{entityVarName}}Mapper.updateEntityFromRequest(request, existing{{entityName}});
-            existing{{entityName}}.setUpdatedAt(java.time.Instant.now().toString());
-            
-            {{entityName}} saved{{entityName}} = {{entityVarName}}RepositoryPort.save(existing{{entityName}});
-            logger.info("{{entityName}} updated successfully with ID: {}", {{entityVarName}}Id);
-            
-            return {{entityVarName}}Mapper.toUpdateResponse(saved{{entityName}});
-        } catch (NotFoundException e) {
-            logger.error("{{entityName}} not found in Update{{entityName}}", e, {{entityVarName}}Id);
-            throw e;
-        } catch (Exception e) {
-            logger.error("Error in Update{{entityName}}", e, {{entityVarName}}Id);
-            throw e;
-        }
+        return {{entityVarName}}RepositoryPort.findById({{entityVarName}}Id)
+                .switchIfEmpty(Mono.error(new NotFoundException("{{entityName}} not found")))
+                .map(existing{{entityName}} -> {
+                    {{entityVarName}}Mapper.updateEntityFromRequest(request, existing{{entityName}});
+                    existing{{entityName}}.setUpdatedAt(java.time.Instant.now().toString());
+                    return existing{{entityName}};
+                })
+                .flatMap({{entityVarName}}RepositoryPort::save)
+                .map(saved{{entityName}} -> {
+                    logger.info("{{entityName}} updated successfully with ID: {}", {{entityVarName}}Id);
+                    return {{entityVarName}}Mapper.toUpdateResponse(saved{{entityName}});
+                })
+                .doOnError(e -> logger.error("Error in Update{{entityName}}", e, {{entityVarName}}Id));
     }
 {{/hasUpdate}}
 
 {{#hasDelete}}
     @Override
-    public Delete{{entityName}}ResponseContent delete(String {{entityVarName}}Id) {
+    public Mono<Delete{{entityName}}ResponseContent> delete(String {{entityVarName}}Id) {
         logger.info("Executing Delete{{entityName}} with {{entityVarName}}Id: {}", {{entityVarName}}Id);
         
-        try {
-            {{entityName}} {{entityVarName}} = {{entityVarName}}RepositoryPort.findById({{entityVarName}}Id)
-                .orElseThrow(() -> new NotFoundException("{{entityName}} not found"));
-            
-            {{entityVarName}}RepositoryPort.deleteById({{entityVarName}}Id);
-            logger.info("{{entityName}} deleted successfully with ID: {}", {{entityVarName}}Id);
-            
-            return Delete{{entityName}}ResponseContent.builder()
-                .deleted(true)
-                .message("{{entityName}} deleted successfully")
-                .build();
-        } catch (NotFoundException e) {
-            logger.error("{{entityName}} not found in Delete{{entityName}}", e, {{entityVarName}}Id);
-            throw e;
-        } catch (Exception e) {
-            logger.error("Error in Delete{{entityName}}", e, {{entityVarName}}Id);
-            throw e;
-        }
+        return {{entityVarName}}RepositoryPort.findById({{entityVarName}}Id)
+                .switchIfEmpty(Mono.error(new NotFoundException("{{entityName}} not found")))
+                .flatMap({{entityVarName}} -> {{entityVarName}}RepositoryPort.deleteById({{entityVarName}}Id))
+                .then(Mono.fromCallable(() -> {
+                    logger.info("{{entityName}} deleted successfully with ID: {}", {{entityVarName}}Id);
+                    return Delete{{entityName}}ResponseContent.builder()
+                            .deleted(true)
+                            .message("{{entityName}} deleted successfully")
+                            .build();
+                }))
+                .doOnError(e -> logger.error("Error in Delete{{entityName}}", e, {{entityVarName}}Id));
     }
 {{/hasDelete}}
 
 {{#hasList}}
     @Override
-    public List{{entityName}}sResponseContent list(Integer page, Integer size, String search) {
+    public Mono<List{{entityName}}sResponseContent> list(Integer page, Integer size, String search) {
         logger.info("Executing List{{entityName}}s with page: {}, size: {}, search: {}", page, size, search);
         
-        try {
-            List<{{entityName}}> {{entityVarName}}s;
-            if (search != null && !search.trim().isEmpty()) {
-                {{entityVarName}}s = {{entityVarName}}RepositoryPort.findBySearchTerm(search, page, size);
-            } else {
-                {{entityVarName}}s = {{entityVarName}}RepositoryPort.findAll();
-            }
-            logger.info("Retrieved {} {{entityVarName}}s successfully", {{entityVarName}}s.size());
-            return {{entityVarName}}Mapper.toListResponse({{entityVarName}}s, page != null ? page : 1, size != null ? size : 20);
-        } catch (Exception e) {
-            logger.error("Error in List{{entityName}}s", e);
-            throw e;
+        Flux<{{entityName}}> {{entityVarName}}Flux;
+        if (search != null && !search.trim().isEmpty()) {
+            {{entityVarName}}Flux = {{entityVarName}}RepositoryPort.findBySearchTerm(search, page, size);
+        } else {
+            {{entityVarName}}Flux = {{entityVarName}}RepositoryPort.findAll();
         }
+        
+        return {{entityVarName}}Flux
+                .collectList()
+                .map({{entityVarName}}s -> {
+                    logger.info("Retrieved {} {{entityVarName}}s successfully", {{entityVarName}}s.size());
+                    return {{entityVarName}}Mapper.toListResponse({{entityVarName}}s, page != null ? page : 1, size != null ? size : 20);
+                })
+                .doOnError(e -> logger.error("Error in List{{entityName}}s", e));
     }
 {{/hasList}}
 
