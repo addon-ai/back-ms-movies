@@ -202,10 +202,14 @@ class ApplicationGenerator:
         if complex_ops:
             for op in complex_ops:
                 method_name = op[0].lower() + op[1:] if op else ''
+                repository_method = self._convert_operation_to_repository_method(op)
+                default_param = self._get_default_parameter(op)
                 complex_ops_info.append({
                     'operationId': op,
                     'methodName': method_name,
-                    'responseType': f'{op}ResponseContent'
+                    'responseType': f'{op}ResponseContent',
+                    'repositoryMethod': repository_method,
+                    'defaultParameter': default_param
                 })
         
         context = mustache_context.copy()
@@ -228,3 +232,20 @@ class ApplicationGenerator:
         content = self.template_renderer.render_template('consolidatedService.mustache', context)
         file_path = self.output_dir / self.file_manager.get_package_path(self.target_packages['application_service']) / f"{entity}Service.java"
         self.file_manager.write_file(file_path, content)
+    
+    def _convert_operation_to_repository_method(self, operation_id: str) -> str:
+        """Convert operation ID to repository method name."""
+        if operation_id.startswith('Get'):
+            # GetNeighborhoodsByCity -> findNeighborhoodsByCity
+            return 'find' + operation_id[3:]
+        return 'findAll'
+    
+    def _get_default_parameter(self, operation_id: str) -> str:
+        """Get default parameter for operation."""
+        if 'ByCity' in operation_id:
+            return '"defaultCityId"'
+        elif 'ByCountry' in operation_id:
+            return '"defaultCountryId"'
+        elif 'ByRegion' in operation_id:
+            return '"defaultRegionId"'
+        return '"defaultId"'

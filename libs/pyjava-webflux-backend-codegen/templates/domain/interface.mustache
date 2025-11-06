@@ -57,5 +57,12 @@ public interface {{classname}} {
     Mono<Void> deleteById(String id);
     
     Mono<Boolean> existsById(String id);
+{{#hasComplexMethods}}
+    
+{{#repositoryMethods}}
+    Flux<{{entityName}}> {{methodName}}({{parameters}});
+    
+{{/repositoryMethods}}
+{{/hasComplexMethods}}
 }
 {{/isDomainPort}}

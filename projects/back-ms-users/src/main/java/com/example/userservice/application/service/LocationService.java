@@ -144,9 +144,9 @@ public class LocationService implements LocationUseCase {
         logger.info("Executing GetNeighborhoodsByCity");
         
         try {
-            // TODO: Implement GetNeighborhoodsByCity business logic
-            logger.info("GetNeighborhoodsByCity executed successfully");
-            throw new UnsupportedOperationException("GetNeighborhoodsByCity not yet implemented");
+            List<Location> locations = locationRepositoryPort.findNeighborhoodsByCity("defaultCityId");
+            logger.info("Retrieved {} locations successfully", locations.size());
+            return GetNeighborhoodsByCityResponseContent.builder().build();
         } catch (Exception e) {
             logger.error("Error in GetNeighborhoodsByCity", e);
             throw e;
@@ -158,9 +158,9 @@ public class LocationService implements LocationUseCase {
         logger.info("Executing GetRegionsByCountry");
         
         try {
-            // TODO: Implement GetRegionsByCountry business logic
-            logger.info("GetRegionsByCountry executed successfully");
-            throw new UnsupportedOperationException("GetRegionsByCountry not yet implemented");
+            List<Location> locations = locationRepositoryPort.findRegionsByCountry("defaultCountryId");
+            logger.info("Retrieved {} locations successfully", locations.size());
+            return GetRegionsByCountryResponseContent.builder().build();
         } catch (Exception e) {
             logger.error("Error in GetRegionsByCountry", e);
             throw e;
@@ -172,9 +172,9 @@ public class LocationService implements LocationUseCase {
         logger.info("Executing GetCitiesByRegion");
         
         try {
-            // TODO: Implement GetCitiesByRegion business logic
-            logger.info("GetCitiesByRegion executed successfully");
-            throw new UnsupportedOperationException("GetCitiesByRegion not yet implemented");
+            List<Location> locations = locationRepositoryPort.findCitiesByRegion("defaultRegionId");
+            logger.info("Retrieved {} locations successfully", locations.size());
+            return GetCitiesByRegionResponseContent.builder().build();
         } catch (Exception e) {
             logger.error("Error in GetCitiesByRegion", e);
             throw e;

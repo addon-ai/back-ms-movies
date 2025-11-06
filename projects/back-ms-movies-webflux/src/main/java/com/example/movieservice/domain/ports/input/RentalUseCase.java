@@ -7,6 +7,8 @@ import com.example.movieservice.application.dto.movie.UpdateRentalRequestContent
 import com.example.movieservice.application.dto.movie.UpdateRentalResponseContent;
 
 import com.example.movieservice.application.dto.movie.ListRentalsResponseContent;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 /**
  * Consolidated use case interface for all Rental operations.
@@ -16,13 +18,13 @@ import com.example.movieservice.application.dto.movie.ListRentalsResponseContent
  */
 public interface RentalUseCase {
     
-    CreateRentalResponseContent create(CreateRentalRequestContent request);
+    Mono<CreateRentalResponseContent> create(CreateRentalRequestContent request);
 
-    GetRentalResponseContent get(String rentalId);
+    Mono<GetRentalResponseContent> get(String rentalId);
 
-    UpdateRentalResponseContent update(String rentalId, UpdateRentalRequestContent request);
+    Mono<UpdateRentalResponseContent> update(String rentalId, UpdateRentalRequestContent request);
 
 
-    ListRentalsResponseContent list(Integer page, Integer size, String search);
+    Mono<ListRentalsResponseContent> list(Integer page, Integer size, String search);
 
 }

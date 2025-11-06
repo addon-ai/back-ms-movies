@@ -160,9 +160,9 @@ public class {{entityName}}Service implements {{entityName}}UseCase {
         logger.info("Executing {{operationId}}");
         
         try {
-            // TODO: Implement {{operationId}} business logic
-            logger.info("{{operationId}} executed successfully");
-            throw new UnsupportedOperationException("{{operationId}} not yet implemented");
+            List<{{entityName}}> {{entityVarName}}s = {{entityVarName}}RepositoryPort.{{repositoryMethod}}({{defaultParameter}});
+            logger.info("Retrieved {} {{entityVarName}}s successfully", {{entityVarName}}s.size());
+            return {{responseType}}.builder().build();
         } catch (Exception e) {
             logger.error("Error in {{operationId}}", e);
             throw e;

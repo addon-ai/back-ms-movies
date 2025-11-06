@@ -3,26 +3,24 @@ spring:
     name: {{project.general.name}}
   profiles:
     active: local
-  datasource:
-    url: jdbc:postgresql://localhost:5432/{{project.general.name}}_db
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/{{project.general.name}}_db
     username: postgres
     password: password123
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
+  data:
+    r2dbc:
+      repositories:
+        enabled: true
+  sql:
+    init:
+      mode: always
 
 server:
   port: 8080
 
 logging:
   level:
-    {{params.basePackage}}: DEBUG
+    root: DEBUG
     org.springframework.security: DEBUG
 
 springdoc:

@@ -29,4 +29,11 @@ public interface LocationRepositoryPort {
     void deleteById(String id);
     
     boolean existsById(String id);
+    
+    List<Location> findNeighborhoodsByCity(String cityId);
+    
+    List<Location> findRegionsByCountry(String countryId);
+    
+    List<Location> findCitiesByRegion(String regionId);
+    
 }

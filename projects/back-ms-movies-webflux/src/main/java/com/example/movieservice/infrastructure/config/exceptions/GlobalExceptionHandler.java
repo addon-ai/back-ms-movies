@@ -6,7 +6,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
+
 import com.example.movieservice.utils.LoggingUtils;
 
 import java.time.OffsetDateTime;
@@ -126,27 +126,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(response);
     }
 
-    @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleNoResourceFoundException(
-            NoResourceFoundException ex, WebRequest request) {
-        String path = request.getDescription(false).replace("uri=", "");
-        
-        // Don't log static resource requests (favicon, css, js, images, etc.)
-        if (isStaticResource(path)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        
-        logger.warn("Resource not found: {}", ex.getMessage());
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("timestamp", OffsetDateTime.now());
-        response.put("status", HttpStatus.NOT_FOUND.value());
-        response.put("error", "Not Found");
-        response.put("message", "The requested resource was not found");
-        response.put("path", path);
-        
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-    }
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(

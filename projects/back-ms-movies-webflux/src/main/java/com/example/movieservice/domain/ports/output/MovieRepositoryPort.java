@@ -2,15 +2,15 @@ package com.example.movieservice.domain.ports.output;
 
 
 import com.example.movieservice.domain.model.Movie;
-import java.util.List;
-import java.util.Optional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * Domain repository port for Movie operations.
  * <p>
  * This interface defines the contract for Movie persistence operations,
  * serving as an output port in the Clean Architecture. It abstracts
- * the persistence layer from the domain logic.
+ * the persistence layer from the domain logic using reactive types.
  * </p>
  * 
  * @author Jiliar Silgado <jiliar.silgado@gmail.com>
@@ -18,15 +18,15 @@ import java.util.Optional;
  */
 public interface MovieRepositoryPort {
     
-    Movie save(Movie movie);
+    Mono<Movie> save(Movie movie);
     
-    Optional<Movie> findById(String id);
+    Mono<Movie> findById(String id);
     
-    List<Movie> findAll();
+    Flux<Movie> findAll();
     
-    List<Movie> findBySearchTerm(String search, Integer page, Integer size);
+    Flux<Movie> findBySearchTerm(String search, Integer page, Integer size);
     
-    void deleteById(String id);
+    Mono<Void> deleteById(String id);
     
-    boolean existsById(String id);
+    Mono<Boolean> existsById(String id);
 }

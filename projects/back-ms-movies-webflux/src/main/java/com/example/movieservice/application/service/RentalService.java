@@ -15,8 +15,8 @@ import com.example.movieservice.infrastructure.config.exceptions.NotFoundExcepti
 import com.example.movieservice.utils.LoggingUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 /**
  * Consolidated application service implementing all Rental use cases.
@@ -26,7 +26,6 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class RentalService implements RentalUseCase {
 
     private static final LoggingUtils logger = LoggingUtils.getLogger(RentalService.class);
@@ -35,82 +34,71 @@ public class RentalService implements RentalUseCase {
     private final RentalMapper rentalMapper;
 
     @Override
-    public CreateRentalResponseContent create(CreateRentalRequestContent request) {
+    public Mono<CreateRentalResponseContent> create(CreateRentalRequestContent request) {
         logger.info("Executing CreateRental with request: {}", request);
         
-        try {
-            Rental rental = rentalMapper.fromCreateRequest(request);
-            Rental savedRental = rentalRepositoryPort.save(rental);
-            logger.info("Rental created successfully with ID: {}", savedRental.getRentalId());
-            return rentalMapper.toCreateResponse(savedRental);
-        } catch (Exception e) {
-            logger.error("Error in CreateRental", e, request);
-            throw e;
-        }
+        return Mono.fromCallable(() -> rentalMapper.fromCreateRequest(request))
+                .flatMap(rentalRepositoryPort::save)
+                .map(savedRental -> {
+                    logger.info("Rental created successfully with ID: {}", savedRental.getRentalId());
+                    return rentalMapper.toCreateResponse(savedRental);
+                })
+                .doOnError(e -> logger.error("Error in CreateRental", e, request));
     }
 
     @Override
-    public GetRentalResponseContent get(String rentalId) {
+    public Mono<GetRentalResponseContent> get(String rentalId) {
         logger.info("Executing GetRental with rentalId: {}", rentalId);
         
-        try {
-            Rental rental = rentalRepositoryPort.findById(rentalId)
-                .orElseThrow(() -> new NotFoundException("Rental not found"));
-            
-            logger.info("Rental retrieved successfully with ID: {}", rentalId);
-            return rentalMapper.toGetResponse(rental);
-        } catch (NotFoundException e) {
-            logger.error("Rental not found in GetRental", e, rentalId);
-            throw e;
-        } catch (Exception e) {
-            logger.error("Error in GetRental", e, rentalId);
-            throw e;
-        }
+        return rentalRepositoryPort.findById(rentalId)
+                .switchIfEmpty(Mono.error(new NotFoundException("Rental not found")))
+                .map(rental -> {
+                    logger.info("Rental retrieved successfully with ID: {}", rentalId);
+                    return rentalMapper.toGetResponse(rental);
+                })
+                .doOnError(e -> logger.error("Error in GetRental", e, rentalId));
     }
 
     @Override
-    public UpdateRentalResponseContent update(String rentalId, UpdateRentalRequestContent request) {
+    public Mono<UpdateRentalResponseContent> update(String rentalId, UpdateRentalRequestContent request) {
         logger.info("Executing UpdateRental with rentalId: {} and request: {}", rentalId, request);
         
-        try {
-            Rental existingRental = rentalRepositoryPort.findById(rentalId)
-                .orElseThrow(() -> new NotFoundException("Rental not found"));
-            
-            // Merge request data into existing entity
-            rentalMapper.updateEntityFromRequest(request, existingRental);
-            existingRental.setUpdatedAt(java.time.Instant.now().toString());
-            
-            Rental savedRental = rentalRepositoryPort.save(existingRental);
-            logger.info("Rental updated successfully with ID: {}", rentalId);
-            
-            return rentalMapper.toUpdateResponse(savedRental);
-        } catch (NotFoundException e) {
-            logger.error("Rental not found in UpdateRental", e, rentalId);
-            throw e;
-        } catch (Exception e) {
-            logger.error("Error in UpdateRental", e, rentalId);
-            throw e;
-        }
+        return rentalRepositoryPort.findById(rentalId)
+                .switchIfEmpty(Mono.error(new NotFoundException("Rental not found")))
+                .map(existingRental -> {
+                    rentalMapper.updateEntityFromRequest(request, existingRental);
+                    existingRental.setUpdatedAt(java.time.Instant.now().toString());
+                    return existingRental;
+                })
+                .flatMap(rentalRepositoryPort::save)
+                .map(savedRental -> {
+                    logger.info("Rental updated successfully with ID: {}", rentalId);
+                    return rentalMapper.toUpdateResponse(savedRental);
+                })
+                .doOnError(e -> logger.error("Error in UpdateRental", e, rentalId));
     }
 
 
     @Override
-    public ListRentalsResponseContent list(Integer page, Integer size, String search) {
+    public Mono<ListRentalsResponseContent> list(Integer page, Integer size, String search) {
         logger.info("Executing ListRentals with page: {}, size: {}, search: {}", page, size, search);
         
-        try {
-            List<Rental> rentals;
-            if (search != null && !search.trim().isEmpty()) {
-                rentals = rentalRepositoryPort.findBySearchTerm(search, page, size);
-            } else {
-                rentals = rentalRepositoryPort.findAll();
-            }
-            logger.info("Retrieved {} rentals successfully", rentals.size());
-            return rentalMapper.toListResponse(rentals, page != null ? page : 1, size != null ? size : 20);
-        } catch (Exception e) {
-            logger.error("Error in ListRentals", e);
-            throw e;
+        Flux<Rental> rentalFlux;
+        if (search != null && !search.trim().isEmpty()) {
+            rentalFlux = rentalRepositoryPort.findBySearchTerm(search, page, size);
+        } else {
+            rentalFlux = rentalRepositoryPort.findAll();
         }
+        
+        return rentalFlux
+                .collectList()
+                .map(rentals -> {
+                    logger.info("Retrieved {} rentals successfully", rentals.size());
+                    int pageNum = page != null ? page : 1;
+                    int pageSize = size != null ? size : 20;
+                    return rentalMapper.toListResponse(rentals, pageNum, pageSize);
+                })
+                .doOnError(e -> logger.error("Error in ListRentals", e));
     }
 
 }

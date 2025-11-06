@@ -7,6 +7,8 @@ import com.example.movieservice.application.dto.movie.UpdateMovieRequestContent;
 import com.example.movieservice.application.dto.movie.UpdateMovieResponseContent;
 import com.example.movieservice.application.dto.movie.DeleteMovieResponseContent;
 import com.example.movieservice.application.dto.movie.ListMoviesResponseContent;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 /**
  * Consolidated use case interface for all Movie operations.
@@ -16,14 +18,14 @@ import com.example.movieservice.application.dto.movie.ListMoviesResponseContent;
  */
 public interface MovieUseCase {
     
-    CreateMovieResponseContent create(CreateMovieRequestContent request);
+    Mono<CreateMovieResponseContent> create(CreateMovieRequestContent request);
 
-    GetMovieResponseContent get(String movieId);
+    Mono<GetMovieResponseContent> get(String movieId);
 
-    UpdateMovieResponseContent update(String movieId, UpdateMovieRequestContent request);
+    Mono<UpdateMovieResponseContent> update(String movieId, UpdateMovieRequestContent request);
 
-    DeleteMovieResponseContent delete(String movieId);
+    Mono<DeleteMovieResponseContent> delete(String movieId);
 
-    ListMoviesResponseContent list(Integer page, Integer size, String search);
+    Mono<ListMoviesResponseContent> list(Integer page, Integer size, String search);
 
 }

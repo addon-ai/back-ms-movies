@@ -57,5 +57,12 @@ public interface {{classname}} {
     void deleteById(String id);
     
     boolean existsById(String id);
+{{#hasComplexMethods}}
+    
+{{#repositoryMethods}}
+    List<{{entityName}}> {{methodName}}({{parameters}});
+    
+{{/repositoryMethods}}
+{{/hasComplexMethods}}
 }
 {{/isDomainPort}}

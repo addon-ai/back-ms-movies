@@ -127,4 +127,41 @@ public class LocationRepositoryAdapter implements LocationRepositoryPort {
         return jpaRepository.findAllPaged(pageable)
                 .map(mapper::toDomain);
     }
+    
+    @Override
+    public List<Location> findNeighborhoodsByCity(String cityId) {
+        log.debug("Executing findNeighborhoodsByCity with parameters: {}", cityId);
+        try {
+            // TODO: Implement custom query for findNeighborhoodsByCity
+            return mapper.toDomainList(jpaRepository.findAll());
+        } catch (Exception e) {
+            log.error("Database error in findNeighborhoodsByCity: {}", e.getMessage(), e);
+            throw new InternalServerErrorException("Failed to execute findNeighborhoodsByCity", e);
+        }
+    }
+    
+    @Override
+    public List<Location> findRegionsByCountry(String countryId) {
+        log.debug("Executing findRegionsByCountry with parameters: {}", countryId);
+        try {
+            // TODO: Implement custom query for findRegionsByCountry
+            return mapper.toDomainList(jpaRepository.findAll());
+        } catch (Exception e) {
+            log.error("Database error in findRegionsByCountry: {}", e.getMessage(), e);
+            throw new InternalServerErrorException("Failed to execute findRegionsByCountry", e);
+        }
+    }
+    
+    @Override
+    public List<Location> findCitiesByRegion(String regionId) {
+        log.debug("Executing findCitiesByRegion with parameters: {}", regionId);
+        try {
+            // TODO: Implement custom query for findCitiesByRegion
+            return mapper.toDomainList(jpaRepository.findAll());
+        } catch (Exception e) {
+            log.error("Database error in findCitiesByRegion: {}", e.getMessage(), e);
+            throw new InternalServerErrorException("Failed to execute findCitiesByRegion", e);
+        }
+    }
+    
 }

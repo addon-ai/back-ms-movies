@@ -163,5 +163,20 @@ public class {{classname}} implements {{portName}} {
                 .doOnError(e -> log.error("Database error while counting {{entityNamePlural}}: {}", e.getMessage(), e))
                 .onErrorMap(e -> new InternalServerErrorException("Failed to count {{entityNamePlural}}", e));
     }
+{{#hasComplexMethods}}
+    
+{{#repositoryMethods}}
+    @Override
+    public Flux<{{entityName}}> {{methodName}}({{parameters}}) {
+        log.debug("Executing {{methodName}} with parameters: {}", {{parameterName}});
+        // TODO: Implement custom query for {{methodName}}
+        return r2dbcRepository.findAll()
+                .map(mapper::toDomain)
+                .doOnError(e -> log.error("Database error in {{methodName}}: {}", e.getMessage(), e))
+                .onErrorMap(e -> new InternalServerErrorException("Failed to execute {{methodName}}", e));
+    }
+    
+{{/repositoryMethods}}
+{{/hasComplexMethods}}
 }
 {{/isAdapter}}

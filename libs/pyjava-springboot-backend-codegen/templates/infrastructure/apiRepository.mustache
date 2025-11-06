@@ -176,5 +176,22 @@ public class {{classname}} implements {{portName}} {
         return jpaRepository.findAllPaged(pageable)
                 .map(mapper::toDomain);
     }
+{{#hasComplexMethods}}
+    
+{{#repositoryMethods}}
+    @Override
+    public List<{{entityName}}> {{methodName}}({{parameters}}) {
+        log.debug("Executing {{methodName}} with parameters: {}", {{parameterName}});
+        try {
+            // TODO: Implement custom query for {{methodName}}
+            return mapper.toDomainList(jpaRepository.findAll());
+        } catch (Exception e) {
+            log.error("Database error in {{methodName}}: {}", e.getMessage(), e);
+            throw new InternalServerErrorException("Failed to execute {{methodName}}", e);
+        }
+    }
+    
+{{/repositoryMethods}}
+{{/hasComplexMethods}}
 }
 {{/isAdapter}}

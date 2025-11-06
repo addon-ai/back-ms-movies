@@ -2,7 +2,7 @@ package com.example.movieservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 
 /**
  * Main Spring Boot application class for the .
@@ -15,7 +15,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  * @version 1.0.0
  */
 @SpringBootApplication
-@EnableJpaRepositories
+@EnableR2dbcRepositories
 public class MovieServiceWebFluxApplication {
 
     /**

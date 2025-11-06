@@ -169,8 +169,9 @@ class CodeGenerator:
         for entity in all_entities:
             entity_schema = self._find_entity_schema(entity, all_schemas)
             if entity_schema:
+                complex_operations = self._find_complex_operations_for_entity(entity)
                 self.domain_generator.generate_domain_model(entity, entity_schema, self.mustache_context)
-                self.domain_generator.generate_domain_port_output(entity, self.mustache_context)
+                self.domain_generator.generate_domain_port_output(entity, complex_operations, self.mustache_context)
     
     def _generate_application_layer(self, entity_operations: Dict[str, List[Dict[str, Any]]], all_entities: set):
         """Generate application layer components."""
@@ -197,9 +198,10 @@ class CodeGenerator:
         for entity in all_entities:
             entity_schema = self._find_entity_schema(entity, all_schemas)
             if entity_schema:
+                complex_operations = self._find_complex_operations_for_entity(entity)
                 self.infrastructure_generator.generate_entity(entity, entity_schema, self.mustache_context)
                 self.infrastructure_generator.generate_jpa_repository(entity, entity_schema, self.mustache_context)
-                self.infrastructure_generator.generate_repository_adapter(entity, self.mustache_context)
+                self.infrastructure_generator.generate_repository_adapter(entity, complex_operations, self.mustache_context)
         
         # Generate REST controllers
         for entity_name in entity_operations.keys():

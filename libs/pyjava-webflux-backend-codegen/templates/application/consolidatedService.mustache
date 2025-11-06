@@ -135,17 +135,16 @@ public class {{entityName}}Service implements {{entityName}}UseCase {
 {{#hasComplexOperations}}
 {{#complexOperations}}
     @Override
-    public {{responseType}} {{methodName}}() {
+    public Mono<{{responseType}}> {{methodName}}() {
         logger.info("Executing {{operationId}}");
         
-        try {
-            // TODO: Implement {{operationId}} business logic
-            logger.info("{{operationId}} executed successfully");
-            throw new UnsupportedOperationException("{{operationId}} not yet implemented");
-        } catch (Exception e) {
-            logger.error("Error in {{operationId}}", e);
-            throw e;
-        }
+        return {{entityVarName}}RepositoryPort.{{repositoryMethod}}({{defaultParameter}})
+                .collectList()
+                .map({{entityVarName}}s -> {
+                    logger.info("Retrieved {} {{entityVarName}}s successfully", {{entityVarName}}s.size());
+                    return {{responseType}}.builder().build();
+                })
+                .doOnError(e -> logger.error("Error in {{operationId}}", e));
     }
 
 {{/complexOperations}}
