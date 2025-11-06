@@ -123,8 +123,8 @@ class ProjectGenerator:
     
     def generate_application_properties(self, mustache_context: Dict[str, Any]):
         """Generate unified application.properties file."""
-        content = self.template_renderer.render_template('project/src/main/resources/application.properties.mustache', mustache_context)
-        file_path = self.output_dir / "src/main/resources/application.properties"
+        content = self.template_renderer.render_template('project/src/main/resources/application.yml.mustache', mustache_context)
+        file_path = self.output_dir / "src/main/resources/application.yml"
         self.file_manager.write_file(file_path, content)
         
         # Generate test application.properties
@@ -207,6 +207,6 @@ class ProjectGenerator:
         context = mustache_context.copy()
         context['environment'] = environment
         
-        content = self.template_renderer.render_template('project/src/main/resources/application-environment.properties.mustache', context)
-        file_path = self.output_dir / f"src/main/resources/application-{environment}.properties"
+        content = self.template_renderer.render_template('project/src/main/resources/application-environment.yml.mustache', context)
+        file_path = self.output_dir / f"src/main/resources/application-{environment}.yml"
         self.file_manager.write_file(file_path, content)
