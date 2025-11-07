@@ -29,7 +29,7 @@ import java.math.BigDecimal;
 public class MovieDbo {
 
     @Id
-    @Column("id")
+    @Column("MovieId")
     private String id;
 
     @Column("title")

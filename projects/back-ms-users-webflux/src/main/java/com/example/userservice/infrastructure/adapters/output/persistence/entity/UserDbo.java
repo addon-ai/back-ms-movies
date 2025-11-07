@@ -28,7 +28,7 @@ import com.example.userservice.domain.model.EntityStatus;
 public class UserDbo {
 
     @Id
-    @Column("id")
+    @Column("UserId")
     private String id;
 
     @Column("username")

@@ -28,7 +28,7 @@ import com.example.movieservice.domain.model.EntityStatus;
 public class RentalDbo {
 
     @Id
-    @Column("id")
+    @Column("RentalId")
     private String id;
 
     @Column("movieId")

@@ -37,7 +37,7 @@ public class MovieDbo {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "id", updatable = false, nullable = false)
+    @Column(name = "MovieId", updatable = false, nullable = false)
     private String id;
 
     @Column(name = "title", nullable = false)

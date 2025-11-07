@@ -39,7 +39,7 @@ public class {{classname}} {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "id", updatable = false, nullable = false)
+    @Column(name = "{{entityName}}Id", updatable = false, nullable = false)
     private String id;
 
 {{#vars}}

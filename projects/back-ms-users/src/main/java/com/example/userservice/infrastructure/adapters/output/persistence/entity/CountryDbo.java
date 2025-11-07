@@ -36,7 +36,7 @@ public class CountryDbo {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "id", updatable = false, nullable = false)
+    @Column(name = "CountryId", updatable = false, nullable = false)
     private String id;
 
     @Column(name = "name", nullable = false)
