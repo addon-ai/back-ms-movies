@@ -1,0 +1,53 @@
+@startuml List Rentals
+!theme plain
+title List Rentals - Hexagonal Architecture Flow
+
+actor Client
+participant "RentalController\n(Input Adapter)" as Controller
+participant "RentalUseCase\n(Domain Port)" as UseCase
+participant "RentalMapper\n(Application Layer)" as Mapper
+participant "RentalRepositoryPort\n(Domain Port)" as RepoPort
+participant "RentalRepositoryAdapter\n(Output Adapter)" as RepoAdapter
+participant "JpaRentalRepository\n(Infrastructure)" as JpaRepo
+database "Database" as DB
+
+Client -> Controller: GET /rentals
+activate Controller
+
+Controller -> UseCase: list()
+activate UseCase
+note right: UseCase is implemented by RentalService
+
+UseCase -> RepoPort: findAll()
+activate RepoPort
+RepoPort -> RepoAdapter: findAll()
+activate RepoAdapter
+RepoAdapter -> JpaRepo: findAll()
+activate JpaRepo
+JpaRepo -> DB: SELECT * FROM rentals
+DB --> JpaRepo: List<RentalDbo>
+JpaRepo --> RepoAdapter: List<RentalDbo>
+deactivate JpaRepo
+
+RepoAdapter -> Mapper: toDomainList(List<RentalDbo>)
+activate Mapper
+Mapper --> RepoAdapter: List<Rental>
+deactivate Mapper
+
+RepoAdapter --> RepoPort: List<Rental>
+deactivate RepoAdapter
+RepoPort --> UseCase: List<Rental>
+deactivate RepoPort
+
+UseCase -> Mapper: toListResponse(List<Rental>)
+activate Mapper
+Mapper --> UseCase: ListRentalResponseContent
+deactivate Mapper
+
+UseCase --> Controller: ListRentalResponseContent
+deactivate UseCase
+
+Controller --> Client: HTTP 200
+deactivate Controller
+
+@enduml
