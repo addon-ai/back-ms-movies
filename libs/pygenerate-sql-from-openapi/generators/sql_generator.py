@@ -48,7 +48,7 @@ class SqlGenerator:
                 if prop_name == primary_key_field:
                     # This is the primary key
                     uuid_pk_type = get_sql_type({'type': 'uuid_pk'}, self.dialect)
-                    columns.append(f'{prop_name} {uuid_pk_type}, -- Primary key identifier{comment}')
+                    columns.append(f'{prop_name} {uuid_pk_type} -- Primary key identifier{comment}')
                 else:
                     # This is a foreign key
                     sql_type = 'UUID'
