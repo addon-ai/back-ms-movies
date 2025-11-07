@@ -84,9 +84,18 @@ class ConfigLoader:
         if 'infra' in project_config:
             context['infra'] = project_config['infra']
         
-        # Set database type flags
+        # Set database type flags and additional variables
         db_config = project_config.get('database', {})
         db_type = db_config.get('sgbd', 'h2').lower() if db_config else 'h2'
+        
+        # Get docker images from configuration
+        docker_images = project_config.get('devops', {}).get('docker', {}).get('images', {
+            'postgresql': 'postgres:15-alpine',
+            'mysql': 'mysql:8.0',
+            'oracle': 'oracle/database:19.3.0-ee',
+            'sqlserver': 'mcr.microsoft.com/mssql/server:2019-latest'
+        })
+        
         context.update({
             'database': {
                 **db_config,
@@ -94,7 +103,13 @@ class ConfigLoader:
                 'mysql': db_type == 'mysql', 
                 'oracle': db_type == 'oracle',
                 'sqlserver': db_type == 'sqlserver' or db_type == 'msserver',
-                'h2': not db_type or db_type == 'h2'
+                'h2': not db_type or db_type == 'h2',
+                'dockerImage': docker_images.get(db_type, 'postgres:15-alpine'),
+                'username': db_config.get('user', 'postgres'),
+                'password': db_config.get('password', 'password123')
+            },
+            'server': {
+                'port': project_config.get('infra', {}).get('http', {}).get('ports', {}).get('int', 8080)
             },
             'smithyModel': 'user-service.smithy',
             'generatorVersion': '1.0.0'

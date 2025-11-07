@@ -99,6 +99,14 @@
             "projects": {
                 "sourceDirectory": "projects",
                 "backupDirectory": "libs/pygithub-integration/.git-backups"
+            },
+            "docker": {
+                "images": {
+                    "postgresql": "postgres:15-alpine",
+                    "mysql": "mysql:8.0",
+                    "oracle": "oracle/database:19.3.0-ee",
+                    "sqlserver": "mcr.microsoft.com/mssql/server:2019-latest"
+                }
             }
         }
     },
@@ -202,6 +210,14 @@
             "projects": {
                 "sourceDirectory": "projects",
                 "backupDirectory": "libs/pygithub-integration/.git-backups"
+            },
+            "docker": {
+                "images": {
+                    "postgresql": "postgres:15-alpine",
+                    "mysql": "mysql:8.0",
+                    "oracle": "oracle/database:19.3.0-ee",
+                    "sqlserver": "mcr.microsoft.com/mssql/server:2019-latest"
+                }
             }
         }
     },
@@ -308,6 +324,14 @@
             "projects": {
                 "sourceDirectory": "projects",
                 "backupDirectory": "libs/pygithub-integration/.git-backups"
+            },
+            "docker": {
+                "images": {
+                    "postgresql": "postgres:15-alpine",
+                    "mysql": "mysql:8.0",
+                    "oracle": "oracle/database:19.3.0-ee",
+                    "sqlserver": "mcr.microsoft.com/mssql/server:2019-latest"
+                }
             }
         }
     },
@@ -414,6 +438,14 @@
             "projects": {
                 "sourceDirectory": "projects",
                 "backupDirectory": "libs/pygithub-integration/.git-backups"
+            },
+            "docker": {
+                "images": {
+                    "postgresql": "postgres:15-alpine",
+                    "mysql": "mysql:8.0",
+                    "oracle": "oracle/database:19.3.0-ee",
+                    "sqlserver": "mcr.microsoft.com/mssql/server:2019-latest"
+                }
             }
         }
     }
