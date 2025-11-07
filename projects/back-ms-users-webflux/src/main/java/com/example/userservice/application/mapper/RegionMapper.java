@@ -32,10 +32,14 @@ public interface RegionMapper {
 
     // Domain to DBO mappings
     @Mapping(source = "regionId", target = "id")
+    @Mapping(source = "createdAt", target = "createdAt", qualifiedByName = "stringToInstant")
+    @Mapping(source = "updatedAt", target = "updatedAt", qualifiedByName = "stringToInstant")
     @org.mapstruct.Named("domainToDbo")
     RegionDbo toDbo(Region domain);
     
     @Mapping(source = "id", target = "regionId")
+    @Mapping(source = "createdAt", target = "createdAt", qualifiedByName = "instantToString")
+    @Mapping(source = "updatedAt", target = "updatedAt", qualifiedByName = "instantToString")
     @org.mapstruct.Named("dboToDomain")
     Region toDomain(RegionDbo dbo);
     
@@ -57,4 +61,14 @@ public interface RegionMapper {
 
     // Specific response mapping methods
     
+    // Date conversion methods
+    @org.mapstruct.Named("instantToString")
+    default String instantToString(java.time.Instant instant) {
+        return instant != null ? instant.toString() : null;
+    }
+    
+    @org.mapstruct.Named("stringToInstant")
+    default java.time.Instant stringToInstant(String dateString) {
+        return dateString != null ? java.time.Instant.parse(dateString) : null;
+    }
 }

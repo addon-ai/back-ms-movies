@@ -39,10 +39,14 @@ public interface UserMapper {
 
     // Domain to DBO mappings
     @Mapping(source = "userId", target = "id")
+    @Mapping(source = "createdAt", target = "createdAt", qualifiedByName = "stringToInstant")
+    @Mapping(source = "updatedAt", target = "updatedAt", qualifiedByName = "stringToInstant")
     @org.mapstruct.Named("domainToDbo")
     UserDbo toDbo(User domain);
     
     @Mapping(source = "id", target = "userId")
+    @Mapping(source = "createdAt", target = "createdAt", qualifiedByName = "instantToString")
+    @Mapping(source = "updatedAt", target = "updatedAt", qualifiedByName = "instantToString")
     @org.mapstruct.Named("dboToDomain")
     User toDomain(UserDbo dbo);
     
@@ -53,11 +57,22 @@ public interface UserMapper {
     List<UserDbo> toDboList(List<User> domains);
 
     // DTO to Domain mappings for Create/Update operations
-    @Mapping(target = "userId", expression = "java(java.util.UUID.randomUUID().toString())")
+    @Mapping(target = "userId", ignore = true)
     @Mapping(target = "status", constant = "ACTIVE")
     @Mapping(target = "createdAt", expression = "java(java.time.Instant.now().toString())")
-    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedAt", expression = "java(java.time.Instant.now().toString())")
     User fromCreateRequest(CreateUserRequestContent request);
+    
+    // Date conversion methods
+    @org.mapstruct.Named("instantToString")
+    default String instantToString(java.time.Instant instant) {
+        return instant != null ? instant.toString() : null;
+    }
+    
+    @org.mapstruct.Named("stringToInstant")
+    default java.time.Instant stringToInstant(String dateString) {
+        return dateString != null ? java.time.Instant.parse(dateString) : null;
+    }
     
     @Mapping(target = "userId", ignore = true)
     @Mapping(target = "status", ignore = true)

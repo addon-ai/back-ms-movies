@@ -32,10 +32,14 @@ public interface NeighborhoodMapper {
 
     // Domain to DBO mappings
     @Mapping(source = "neighborhoodId", target = "id")
+    @Mapping(source = "createdAt", target = "createdAt", qualifiedByName = "stringToInstant")
+    @Mapping(source = "updatedAt", target = "updatedAt", qualifiedByName = "stringToInstant")
     @org.mapstruct.Named("domainToDbo")
     NeighborhoodDbo toDbo(Neighborhood domain);
     
     @Mapping(source = "id", target = "neighborhoodId")
+    @Mapping(source = "createdAt", target = "createdAt", qualifiedByName = "instantToString")
+    @Mapping(source = "updatedAt", target = "updatedAt", qualifiedByName = "instantToString")
     @org.mapstruct.Named("dboToDomain")
     Neighborhood toDomain(NeighborhoodDbo dbo);
     
@@ -57,4 +61,14 @@ public interface NeighborhoodMapper {
 
     // Specific response mapping methods
     
+    // Date conversion methods
+    @org.mapstruct.Named("instantToString")
+    default String instantToString(java.time.Instant instant) {
+        return instant != null ? instant.toString() : null;
+    }
+    
+    @org.mapstruct.Named("stringToInstant")
+    default java.time.Instant stringToInstant(String dateString) {
+        return dateString != null ? java.time.Instant.parse(dateString) : null;
+    }
 }

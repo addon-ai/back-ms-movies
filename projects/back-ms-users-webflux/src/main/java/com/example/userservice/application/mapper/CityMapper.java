@@ -32,10 +32,14 @@ public interface CityMapper {
 
     // Domain to DBO mappings
     @Mapping(source = "cityId", target = "id")
+    @Mapping(source = "createdAt", target = "createdAt", qualifiedByName = "stringToInstant")
+    @Mapping(source = "updatedAt", target = "updatedAt", qualifiedByName = "stringToInstant")
     @org.mapstruct.Named("domainToDbo")
     CityDbo toDbo(City domain);
     
     @Mapping(source = "id", target = "cityId")
+    @Mapping(source = "createdAt", target = "createdAt", qualifiedByName = "instantToString")
+    @Mapping(source = "updatedAt", target = "updatedAt", qualifiedByName = "instantToString")
     @org.mapstruct.Named("dboToDomain")
     City toDomain(CityDbo dbo);
     
@@ -57,4 +61,14 @@ public interface CityMapper {
 
     // Specific response mapping methods
     
+    // Date conversion methods
+    @org.mapstruct.Named("instantToString")
+    default String instantToString(java.time.Instant instant) {
+        return instant != null ? instant.toString() : null;
+    }
+    
+    @org.mapstruct.Named("stringToInstant")
+    default java.time.Instant stringToInstant(String dateString) {
+        return dateString != null ? java.time.Instant.parse(dateString) : null;
+    }
 }

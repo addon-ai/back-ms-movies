@@ -49,10 +49,10 @@ public interface {{classname}} {
 
     // DTO to Domain mappings for Create/Update operations
 {{#hasCreateDto}}
-    @Mapping(target = "{{entityVarName}}Id", expression = "java(java.util.UUID.randomUUID().toString())")
+    @Mapping(target = "{{entityVarName}}Id", ignore = true)
     @Mapping(target = "status", constant = "ACTIVE")
     @Mapping(target = "createdAt", expression = "java(java.time.Instant.now().toString())")
-    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedAt", expression = "java(java.time.Instant.now().toString())")
 {{#relationMappings}}
     @Mapping(source = "{{sourceField}}", target = "{{targetField}}")
 {{/relationMappings}}
