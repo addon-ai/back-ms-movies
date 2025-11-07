@@ -159,6 +159,27 @@ class ProjectGenerator:
         file_path = self.output_dir / "docker-compose.yml"
         self.file_manager.write_file(file_path, content)
     
+    def generate_database_init_script(self, mustache_context: Dict[str, Any]):
+        """Generate database initialization script for Docker."""
+        db_config = self.project_config.get('database', {})
+        db_type = db_config.get('sgbd', 'postgresql').lower()
+        db_name = db_config.get('name', 'default_db')
+        
+        # Generate database-specific CREATE DATABASE script
+        if db_type == 'postgresql':
+            content = f"-- Create database if it doesn't exist\nSELECT 'CREATE DATABASE {db_name}'\nWHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '{db_name}')\\gexec\n"
+        elif db_type == 'mysql':
+            content = f"-- Create database if it doesn't exist\nCREATE DATABASE IF NOT EXISTS `{db_name}`;\n"
+        elif db_type == 'oracle':
+            content = f"-- Create database if it doesn't exist\n-- Oracle uses tablespaces and users instead of databases\nCREATE USER {db_name} IDENTIFIED BY password DEFAULT TABLESPACE users;\nGRANT CONNECT, RESOURCE TO {db_name};\n"
+        elif db_type == 'sqlserver' or db_type == 'mssql':
+            content = f"-- Create database if it doesn't exist\nIF NOT EXISTS (SELECT name FROM sys.databases WHERE name = '{db_name}')\nBEGIN\n    CREATE DATABASE [{db_name}];\nEND\nGO\n"
+        else:
+            content = f"-- Create database if it doesn't exist\nCREATE DATABASE IF NOT EXISTS {db_name};\n"
+        
+        file_path = self.output_dir / "init-db.sql"
+        self.file_manager.write_file(file_path, content)
+    
     def generate_dockerfile(self, mustache_context: Dict[str, Any]):
         """Generate Dockerfile."""
         content = self.template_renderer.render_template('Dockerfile.mustache', mustache_context)

@@ -229,16 +229,8 @@ class CodeGenerator:
         self.project_generator.generate_gitignore(self.mustache_context)
         self.project_generator.generate_dockerignore(self.mustache_context)
         
-        # Generate database init script based on SGBD type
-        database_sgbd = self.project_config.get('database', {}).get('sgbd', '').lower()
-        if database_sgbd == 'postgresql':
-            self.project_generator.generate_postgres_init_script(self.mustache_context)
-        elif database_sgbd == 'mysql':
-            self.project_generator.generate_mysql_init_script(self.mustache_context)
-        elif database_sgbd == 'oracle':
-            self.project_generator.generate_oracle_init_script(self.mustache_context)
-        elif database_sgbd == 'mssql':
-            self.project_generator.generate_mssql_init_script(self.mustache_context)
+        # Generate database initialization script
+        self.project_generator.generate_database_init_script(self.mustache_context)
     
     def _group_operations_by_entity(self, all_operations: List[Dict[str, Any]], all_entities: set) -> Dict[str, List[Dict[str, Any]]]:
         """Group operations by entity for consolidated services."""
