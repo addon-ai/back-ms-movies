@@ -112,7 +112,14 @@ echo ""
 python3 "$PROJECT_ROOT/libs/pyarchitect-docs-generator.py"
 
 echo ""
-echo "🐙 Step 6: Synchronizing projects with GitHub repositories..."
+echo "🗄️  Step 6: Generating SQL DDL scripts from OpenAPI specifications..."
+echo ""
+
+# Run the SQL generator
+python3 "$PROJECT_ROOT/libs/pygenerate-sql-from-openapi.py"
+
+echo ""
+echo "🐙 Step 7: Synchronizing projects with GitHub repositories..."
 echo ""
 
 # Check if any project has GitHub integration enabled
@@ -162,6 +169,7 @@ echo "   • schemas/*/fake-data/ → Fake data"
 echo "   • docs/puml/open-api/ → OpenAPI documentation (PlantUML, Markdown, TXT)"
 echo "   • docs/puml/components/ → Architectural component diagrams (PlantUML)"
 echo "   • docs/puml/sequences/ → CRUD sequence diagrams by service (PlantUML)"
+echo "   • sql/ → SQL DDL scripts for database creation"
 echo "   • GitHub repositories → Synchronized with generated projects (if GITHUB_TOKEN set)"
 echo "🌿 Pipeline branch: $(git branch --show-current)"
 echo "🚀 Ready to run:"
