@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: back-ms-movies-webflux
+  profiles:
+    active: local
+  r2dbc:
+    url: ${DB_URL:r2dbc:postgresql://localhost:5433/back-ms-movies-webflux_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password123}
+  data:
+    r2dbc:
+      repositories:
+        enabled: true
+  flyway:
+    url: ${FLYWAY_URL:jdbc:postgresql://localhost:5433/back-ms-movies-webflux_db}
+    user: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password123}
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    enabled: true
+    create-schemas: true
+
+server:
+  port: 8081
+
+logging:
+  level:
+    root: DEBUG
+    org.springframework.security: DEBUG
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    try-it-out-enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
