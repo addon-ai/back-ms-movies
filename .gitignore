@@ -440,5 +440,5 @@ docs/
 build/
 schemas/
 target/
-db/
+sql/
 .vscode/
