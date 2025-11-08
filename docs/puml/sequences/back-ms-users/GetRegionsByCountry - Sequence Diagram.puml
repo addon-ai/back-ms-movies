@@ -1,0 +1,51 @@
+@startuml GetRegionsByCountry
+!theme plain
+title GetRegionsByCountry - Hexagonal Architecture Flow
+
+actor Client
+participant "LocationController\n(Input Adapter)" as Controller
+participant "LocationUseCase\n(Domain Port)" as UseCase
+participant "LocationService\n(Application Service)" as Service
+participant "LocationMapper\n(Application Layer)" as Mapper
+participant "LocationRepositoryPort\n(Domain Port)" as RepoPort
+participant "LocationRepositoryAdapter\n(Output Adapter)" as RepoAdapter
+participant "JpaLocationRepository\n(Infrastructure)" as JpaRepo
+database "Database" as DB
+
+Client -> Controller: GET /locations/regions-by-country
+activate Controller
+
+Controller -> UseCase: getRegionsByCountry()
+activate UseCase
+note right: UseCase is implemented by LocationService
+
+UseCase -> UseCase: processBusinessLogic()
+note right: Custom business logic for GetRegionsByCountry operation
+
+UseCase -> RepoPort: findRelatedData()
+activate RepoPort
+RepoPort -> RepoAdapter: findRelatedData()
+activate RepoAdapter
+RepoAdapter -> JpaRepo: findRelatedData()
+activate JpaRepo
+JpaRepo -> DB: SELECT related data
+DB --> JpaRepo: List<RelatedDbo>
+JpaRepo --> RepoAdapter: List<RelatedDbo>
+deactivate JpaRepo
+RepoAdapter --> RepoPort: List<RelatedDbo>
+deactivate RepoAdapter
+RepoPort --> UseCase: List<RelatedDbo>
+deactivate RepoPort
+
+UseCase -> Mapper: toResponse(List<RelatedDbo>)
+activate Mapper
+Mapper --> UseCase: CustomLocationResponseContent
+deactivate Mapper
+
+UseCase --> Controller: CustomLocationResponseContent
+deactivate UseCase
+
+Controller --> Client: HTTP 200
+deactivate Controller
+
+@enduml
