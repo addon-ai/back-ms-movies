@@ -1,5 +1,6 @@
 package {{packageName}};
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -76,6 +77,29 @@ public class {{classname}} {
         response.put("status", HttpStatus.CONFLICT.value());
         response.put("error", "Conflict");
         response.put("message", ex.getMessage());
+        response.put("path", request.getDescription(false).replace("uri=", ""));
+        
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(DuplicateKeyException.class)
+    public ResponseEntity<Map<String, Object>> handleDuplicateKeyException(
+            DuplicateKeyException ex, WebRequest request) {
+        logger.warn("Duplicate key constraint violation: {}", ex.getMessage());
+        
+        String message = "Resource already exists";
+        String exMessage = ex.getMessage().toLowerCase();
+        if (exMessage.contains("username")) {
+            message = "Username already exists";
+        } else if (exMessage.contains("email")) {
+            message = "Email already exists";
+        }
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", OffsetDateTime.now());
+        response.put("status", HttpStatus.CONFLICT.value());
+        response.put("error", "Conflict");
+        response.put("message", message);
         response.put("path", request.getDescription(false).replace("uri=", ""));
         
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);

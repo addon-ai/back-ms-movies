@@ -12,11 +12,14 @@ import com.example.userservice.application.dto.user.ListUsersResponseContent;
 import com.example.userservice.domain.model.User;
 import com.example.userservice.application.mapper.UserMapper;
 import com.example.userservice.infrastructure.config.exceptions.NotFoundException;
+import com.example.userservice.infrastructure.config.exceptions.ConflictException;
 import com.example.userservice.utils.LoggingUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.dao.DuplicateKeyException;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
+import java.util.List;
 
 /**
  * Consolidated application service implementing all User use cases.
@@ -42,6 +45,16 @@ public class UserService implements UserUseCase {
                 .map(savedUser -> {
                     logger.info("User created successfully with ID: {}", savedUser.getUserId());
                     return userMapper.toCreateResponse(savedUser);
+                })
+                .onErrorMap(DuplicateKeyException.class, ex -> {
+                    String message = ex.getMessage();
+                    if (message.contains("users_username_key")) {
+                        return new ConflictException("Username already exists");
+                    } else if (message.contains("users_email_key")) {
+                        return new ConflictException("Email already exists");
+                    } else {
+                        return new ConflictException("User data conflicts with existing records");
+                    }
                 })
                 .doOnError(e -> logger.error("Error in CreateUser", e, request));
     }
