@@ -13,11 +13,9 @@ import {{utils}}.LoggingUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.Flux;{{#operationName}}
-{{#isListOperation}}
+import reactor.core.publisher.Flux;
 import java.util.List;
-import java.math.BigDecimal;{{/isListOperation}}
-{{/operationName}}
+import java.math.BigDecimal;
 
 /**
  * Reactive application service implementing {{operationName}} use case.
@@ -124,26 +122,25 @@ public class {{classname}} implements {{operationName}}UseCase {
         int pageNum = page != null && page > 0 ? page : 1;
         int pageSize = size != null && size > 0 ? size : 20;
         
-        Mono<Long> totalCountMono;
-        Flux<{{entityName}}> entityFlux;
+        Mono<Long> countMono;
+        Flux<{{entityName}}> {{entityVarName}}Flux;
         
         if (search != null && !search.trim().isEmpty()) {
-            totalCountMono = (({{entityName}}RepositoryAdapter) {{entityVarName}}RepositoryPort).countBySearchTerm(search);
-            entityFlux = {{entityVarName}}RepositoryPort.findBySearchTerm(search, pageNum, pageSize);
+            countMono = (({{entityName}}RepositoryAdapter) {{entityVarName}}RepositoryPort).countBySearchTerm(search);
+            {{entityVarName}}Flux = {{entityVarName}}RepositoryPort.findBySearchTerm(search, pageNum, pageSize);
         } else {
-            totalCountMono = (({{entityName}}RepositoryAdapter) {{entityVarName}}RepositoryPort).countAll();
-            entityFlux = {{entityVarName}}RepositoryPort.findBySearchTerm("", pageNum, pageSize);
+            countMono = (({{entityName}}RepositoryAdapter) {{entityVarName}}RepositoryPort).countAll();
+            {{entityVarName}}Flux = {{entityVarName}}RepositoryPort.findBySearchTerm("", pageNum, pageSize);
         }
         
         return Mono.zip(
-            entityFlux.collectList(),
-            totalCountMono
+                {{entityVarName}}Flux.collectList(),
+                countMono
         ).map(tuple -> {
-            List<{{entityName}}> entities = tuple.getT1();
+            java.util.List<{{entityName}}> {{entityVarName}}s = tuple.getT1();
             Long totalCount = tuple.getT2();
-            
-            logger.info("Retrieved {} {{entityVarName}}s successfully (total: {})", entities.size(), totalCount);
-            return ({{returnType}}) {{entityVarName}}Mapper.toListResponse(entities, pageNum, pageSize, totalCount.intValue());
+            logger.info("Retrieved {} {{entityVarName}}s out of {} total", {{entityVarName}}s.size(), totalCount);
+            return ({{returnType}}) {{entityVarName}}Mapper.toListResponse({{entityVarName}}s, pageNum, pageSize, totalCount.intValue());
         }).doOnError(e -> logger.error("Error in {{operationName}}", e));
         {{/isListOperation}}
         {{^isListOperation}}

@@ -1,0 +1,28 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/back_ms_users_webflux_db
+    username: postgres
+    password: password123
+  flyway:
+    url: jdbc:postgresql://localhost:5432/back_ms_users_webflux_db
+    user: postgres
+    password: password123
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: false
+    enabled: true
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: DEBUG
+    org.springframework.r2dbc: DEBUG
+    com.example.userservice: DEBUG
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
+import java.util.List;
 
 /**
  * Consolidated application service implementing all User use cases.
@@ -99,22 +100,30 @@ public class UserService implements UserUseCase {
     public Mono<ListUsersResponseContent> list(Integer page, Integer size, String search) {
         logger.info("Executing ListUsers with page: {}, size: {}, search: {}", page, size, search);
         
+        int pageNum = page != null && page > 0 ? page : 1;
+        int pageSize = size != null && size > 0 ? size : 20;
+        
+        Mono<Long> countMono;
         Flux<User> userFlux;
+        
         if (search != null && !search.trim().isEmpty()) {
-            userFlux = userRepositoryPort.findBySearchTerm(search, page, size);
+            countMono = userRepositoryPort.countBySearchTerm(search);
+            userFlux = userRepositoryPort.findBySearchTerm(search, pageNum, pageSize);
         } else {
-            userFlux = userRepositoryPort.findAll();
+            countMono = userRepositoryPort.countAll();
+            userFlux = userRepositoryPort.findBySearchTerm("", pageNum, pageSize);
         }
         
-        return userFlux
-                .collectList()
-                .map(users -> {
-                    logger.info("Retrieved {} users successfully", users.size());
-                    int pageNum = page != null ? page : 1;
-                    int pageSize = size != null ? size : 20;
-                    return userMapper.toListResponse(users, pageNum, pageSize);
-                })
-                .doOnError(e -> logger.error("Error in ListUsers", e));
+        return Mono.zip(
+                userFlux.collectList(),
+                countMono
+        ).map(tuple -> {
+            List<User> users = tuple.getT1();
+            Long totalCount = tuple.getT2();
+            logger.info("Retrieved {} users out of {} total", users.size(), totalCount);
+            return userMapper.toListResponse(users, pageNum, pageSize, totalCount.intValue());
+        })
+        .doOnError(e -> logger.error("Error in ListUsers", e));
     }
 
 }

@@ -6,7 +6,7 @@
 
 -- Table for users
 CREATE TABLE IF NOT EXISTS users (
-    user_id UUID DEFAULT gen_random_uuid() PRIMARY KEY, -- Primary key identifier -- Unique identifier for the user account. Generated automatically upon creation
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY, -- Primary key identifier -- Unique identifier for the user account. Generated automatically upon creation
     username VARCHAR(255) NOT NULL UNIQUE, -- Users unique username. Cannot be changed after account creation
     email VARCHAR(255) NOT NULL UNIQUE, -- Users email address. Used for notifications and account recovery
     first_name VARCHAR(255), -- Users first name. May be null if not provided during registration
@@ -50,7 +50,7 @@ INSERT INTO userstatuss (code, name, description) VALUES ('SUSPENDED', 'Suspende
 
 -- Table for cities
 CREATE TABLE IF NOT EXISTS cities (
-    city_id UUID DEFAULT gen_random_uuid() PRIMARY KEY, -- Primary key identifier
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY, -- Primary key identifier
     name VARCHAR(255) NOT NULL,
     region_id UUID NOT NULL,
     status VARCHAR(255) NOT NULL,
@@ -64,7 +64,7 @@ CREATE INDEX IF NOT EXISTS idx_cities_status ON cities (status); -- Index for st
 
 -- Table for countries
 CREATE TABLE IF NOT EXISTS countries (
-    country_id UUID DEFAULT gen_random_uuid() PRIMARY KEY, -- Primary key identifier
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY, -- Primary key identifier
     name VARCHAR(255) NOT NULL,
     code VARCHAR(255) NOT NULL,
     status VARCHAR(255) NOT NULL,
@@ -78,7 +78,7 @@ CREATE INDEX IF NOT EXISTS idx_countries_status ON countries (status); -- Index 
 
 -- Table for locations
 CREATE TABLE IF NOT EXISTS locations (
-    location_id UUID DEFAULT gen_random_uuid() PRIMARY KEY, -- Primary key identifier
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY, -- Primary key identifier
     user_id UUID NOT NULL,
     country VARCHAR(255) NOT NULL,
     region VARCHAR(255) NOT NULL,
@@ -116,7 +116,7 @@ INSERT INTO locationtypes (code, name, description) VALUES ('OTHER', 'Other', 'L
 
 -- Table for neighborhoods
 CREATE TABLE IF NOT EXISTS neighborhoods (
-    neighborhood_id UUID DEFAULT gen_random_uuid() PRIMARY KEY, -- Primary key identifier
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY, -- Primary key identifier
     name VARCHAR(255) NOT NULL,
     city_id UUID NOT NULL,
     status VARCHAR(255) NOT NULL,
@@ -130,7 +130,7 @@ CREATE INDEX IF NOT EXISTS idx_neighborhoods_status ON neighborhoods (status); -
 
 -- Table for regions
 CREATE TABLE IF NOT EXISTS regions (
-    region_id UUID DEFAULT gen_random_uuid() PRIMARY KEY, -- Primary key identifier
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY, -- Primary key identifier
     name VARCHAR(255) NOT NULL,
     code VARCHAR(255) NOT NULL,
     country_id UUID NOT NULL,
