@@ -1,0 +1,224 @@
+'This diagram can be visualized at: https://www.planttext.com/
+
+@startuml back-ms-movies
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam componentStyle uml2
+skinparam linetype curved
+
+
+' Paquete para Entidades de Dominio
+package "entities" {
+    class "Movie" {
+      - movieId: string <<required>>
+      - title: string <<required>>
+      - director: string <<required>>
+      - genre: string <<required>>
+      - releaseYear: number <<required>>
+      - duration: number <<required>>
+      - description: string
+      - availableCopies: number <<required>>
+      - rentalPrice: number <<required>>
+      - createdAt: string <<required>>
+      - updatedAt: string <<required>>
+      - status: string <<required>>
+    }
+    
+        class "Rental" {
+      - rentalId: string <<required>>
+      - movieId: string <<required>>
+      - userId: string <<required>>
+      - rentalDate: string <<required>>
+      - dueDate: string <<required>>
+      - returnDate: string
+      - totalPrice: number <<required>>
+      - lateFee: number
+      - createdAt: string <<required>>
+      - updatedAt: string <<required>>
+      - status: string <<required>>
+    }
+    
+    }
+
+' Paquete para DTOs (Data Transfer Objects)
+package "dtos" {
+    class "CreateMovieRequestContent" {
+      - title: string <<required>>
+      - director: string <<required>>
+      - genre: string <<required>>
+      - releaseYear: number <<required>>
+      - duration: number <<required>>
+      - description: string
+      - availableCopies: number <<required>>
+      - rentalPrice: number <<required>>
+    }
+    
+        class "CreateMovieResponseContent" {
+      - movieId: string <<required>>
+      - title: string <<required>>
+      - director: string <<required>>
+      - genre: string <<required>>
+      - releaseYear: number <<required>>
+      - duration: number <<required>>
+      - description: string
+      - availableCopies: number <<required>>
+      - rentalPrice: number <<required>>
+      - createdAt: string <<required>>
+      - status: string <<required>>
+    }
+    
+        class "CreateRentalRequestContent" {
+      - movieId: string <<required>>
+      - userId: string <<required>>
+      - rentalDays: number <<required>>
+    }
+    
+        class "CreateRentalResponseContent" {
+      - rentalId: string <<required>>
+      - movieId: string <<required>>
+      - userId: string <<required>>
+      - rentalDate: string <<required>>
+      - dueDate: string <<required>>
+      - totalPrice: number <<required>>
+      - createdAt: string <<required>>
+      - status: string <<required>>
+    }
+    
+        class "DeleteMovieResponseContent" {
+      - deleted: boolean <<required>>
+      - message: string <<required>>
+    }
+    
+        class "GetMovieResponseContent" {
+      - movieId: string <<required>>
+      - title: string <<required>>
+      - director: string <<required>>
+      - genre: string <<required>>
+      - releaseYear: number <<required>>
+      - duration: number <<required>>
+      - description: string
+      - availableCopies: number <<required>>
+      - rentalPrice: number <<required>>
+      - createdAt: string <<required>>
+      - updatedAt: string <<required>>
+      - status: string <<required>>
+    }
+    
+        class "GetRentalResponseContent" {
+      - rentalId: string <<required>>
+      - movieId: string <<required>>
+      - userId: string <<required>>
+      - rentalDate: string <<required>>
+      - dueDate: string <<required>>
+      - returnDate: string
+      - totalPrice: number <<required>>
+      - lateFee: number
+      - createdAt: string <<required>>
+      - updatedAt: string <<required>>
+      - status: string <<required>>
+    }
+    
+        class "ListMoviesResponseContent" {
+      - movies: array <<required>>
+      - page: number <<required>>
+      - size: number <<required>>
+      - total: number <<required>>
+      - totalPages: number <<required>>
+    }
+    
+        class "ListRentalsResponseContent" {
+      - rentals: array <<required>>
+      - page: number <<required>>
+      - size: number <<required>>
+      - total: number <<required>>
+      - totalPages: number <<required>>
+    }
+    
+        class "UpdateMovieRequestContent" {
+      - title: string
+      - director: string
+      - genre: string
+      - releaseYear: number
+      - duration: number
+      - description: string
+      - availableCopies: number
+      - rentalPrice: number
+    }
+    
+        class "UpdateMovieResponseContent" {
+      - movieId: string <<required>>
+      - title: string <<required>>
+      - director: string <<required>>
+      - genre: string <<required>>
+      - releaseYear: number <<required>>
+      - duration: number <<required>>
+      - description: string
+      - availableCopies: number <<required>>
+      - rentalPrice: number <<required>>
+      - updatedAt: string <<required>>
+      - status: string <<required>>
+    }
+    
+        class "UpdateRentalRequestContent" {
+      - returnDate: string
+      - lateFee: number
+      - status: string
+    }
+    
+        class "UpdateRentalResponseContent" {
+      - rentalId: string <<required>>
+      - returnDate: string <<required>>
+      - lateFee: number <<required>>
+      - totalAmount: number <<required>>
+      - createdAt: string <<required>>
+      - updatedAt: string <<required>>
+      - status: string <<required>>
+    }
+    
+        class "CreateMovieRequest" {
+      - title: string <<required>>
+      - director: string <<required>>
+      - genre: string <<required>>
+      - releaseYear: number <<required>>
+      - duration: number <<required>>
+      - description: string
+      - availableCopies: number <<required>>
+      - rentalPrice: number <<required>>
+    }
+    
+        class "UpdateMovieRequest" {
+      - movieId: string <<required>>
+      - body: object <<required>>
+    }
+    
+        class "CreateRentalRequest" {
+      - movieId: string <<required>>
+      - userId: string <<required>>
+      - rentalDays: number <<required>>
+    }
+    
+        class "UpdateRentalRequest" {
+      - rentalId: string <<required>>
+      - body: object <<required>>
+    }
+    
+    }
+
+' Paquete para DTOs de Errores/Excepciones
+package "Exceptions" {
+    class "ConflictErrorResponseContent" {
+      - message: string <<required>>
+    }
+    
+        class "NotFoundErrorResponseContent" {
+      - message: string <<required>>
+    }
+    
+        class "ValidationErrorResponseContent" {
+      - message: string <<required>>
+      - field: string <<required>>
+    }
+    
+    }
+
+@enduml
