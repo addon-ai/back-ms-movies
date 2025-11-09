@@ -50,6 +50,25 @@ public interface {{classname}} extends JpaRepository<{{entityName}}Dbo, UUID> {
     Long countBySearchTerm(@Param("search") String search);
     
     /**
+     * Find entities with combined filters including status and date range.
+     */
+    @Query("SELECT e FROM {{entityName}}Dbo e WHERE " +
+           "(:search IS NULL OR :search = '' OR " +
+           "LOWER(e.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.lastName) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "AND (:status IS NULL OR :status = '' OR e.status = :status) " +
+           "AND (:dateFrom IS NULL OR :dateFrom = '' OR e.createdAt >= CAST(:dateFrom AS TIMESTAMP)) " +
+           "AND (:dateTo IS NULL OR :dateTo = '' OR e.createdAt <= CAST(:dateTo AS TIMESTAMP)) " +
+           "ORDER BY e.createdAt DESC")
+    Page<{{entityName}}Dbo> findByFilters(@Param("search") String search, 
+                                          @Param("status") String status,
+                                          @Param("dateFrom") String dateFrom,
+                                          @Param("dateTo") String dateTo,
+                                          Pageable pageable);
+    
+    /**
      * Find all entities with pagination.
      */
     @Query("SELECT e FROM {{entityName}}Dbo e ORDER BY e.createdAt DESC")
@@ -174,6 +193,32 @@ public class {{classname}} implements {{portName}} {
         } catch (Exception e) {
             log.error("Database error while searching {{entityNamePlural}}: {}", e.getMessage(), e);
             throw new InternalServerErrorException("Failed to search {{entityNamePlural}}", e);
+        }
+    }
+    
+    @Override
+    public List<{{entityName}}> findByFilters(String search, String status, String dateFrom, String dateTo, Integer page, Integer size) {
+        log.debug("Searching {{entityNamePlural}} with filters - search: {}, status: {}, dateFrom: {}, dateTo: {}, page: {}, size: {}", 
+                 search, status, dateFrom, dateTo, page, size);
+        try {
+            org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(
+                page != null && page > 0 ? page - 1 : 0, 
+                size != null && size > 0 ? size : 20
+            );
+            
+            return jpaRepository.findByFilters(
+                search != null ? search : "", 
+                status != null ? status : "",
+                dateFrom != null ? dateFrom : "",
+                dateTo != null ? dateTo : "",
+                pageable
+            ).map(mapper::toDomain).getContent();
+        } catch (org.springframework.dao.DuplicateKeyException | org.springframework.dao.DataIntegrityViolationException e) {
+            log.error("Database constraint violation while filtering {{entityNamePlural}}: {}", e.getMessage(), e);
+            throw e;
+        } catch (Exception e) {
+            log.error("Database error while filtering {{entityNamePlural}}: {}", e.getMessage(), e);
+            throw new InternalServerErrorException("Failed to filter {{entityNamePlural}}", e);
         }
     }
     

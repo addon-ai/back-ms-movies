@@ -95,16 +95,29 @@ public class RentalService implements RentalUseCase {
 
 
     @Override
-    public ListRentalsResponseContent list(Integer page, Integer size, String search) {
-        logger.info("Executing ListRentals with page: {}, size: {}, search: {}", page, size, search);
+    public ListRentalsResponseContent list(Integer page, Integer size, String search, String status, String dateFrom, String dateTo) {
+        logger.info("Executing ListRentals with page: {}, size: {}, search: {}, status: {}, dateFrom: {}, dateTo: {}", 
+                   page, size, search, status, dateFrom, dateTo);
         
         try {
-            List<Rental> rentals;
-            if (search != null && !search.trim().isEmpty()) {
-                rentals = rentalRepositoryPort.findBySearchTerm(search, page, size);
-            } else {
-                rentals = rentalRepositoryPort.findAll();
+            // Apply default values
+            String effectiveStatus = (status == null || status.trim().isEmpty()) ? "ACTIVE" : status;
+            String effectiveDateFrom = dateFrom;
+            String effectiveDateTo = dateTo;
+            
+            if (effectiveDateFrom == null || effectiveDateFrom.trim().isEmpty()) {
+                effectiveDateFrom = java.time.Instant.now().minus(30, java.time.temporal.ChronoUnit.DAYS).toString();
             }
+            if (effectiveDateTo == null || effectiveDateTo.trim().isEmpty()) {
+                effectiveDateTo = java.time.Instant.now().toString();
+            }
+            
+            logger.info("Effective filters - status: {}, dateFrom: {}, dateTo: {}", 
+                       effectiveStatus, effectiveDateFrom, effectiveDateTo);
+            
+            List<Rental> rentals = rentalRepositoryPort.findByFilters(
+                search, effectiveStatus, effectiveDateFrom, effectiveDateTo, page, size);
+            
             logger.info("Retrieved {} rentals successfully", rentals.size());
             return rentalMapper.toListResponse(rentals, page != null ? page : 1, size != null ? size : 20);
         } catch (Exception e) {

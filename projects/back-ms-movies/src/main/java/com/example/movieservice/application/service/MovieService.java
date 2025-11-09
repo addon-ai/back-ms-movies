@@ -118,16 +118,29 @@ public class MovieService implements MovieUseCase {
     }
 
     @Override
-    public ListMoviesResponseContent list(Integer page, Integer size, String search) {
-        logger.info("Executing ListMovies with page: {}, size: {}, search: {}", page, size, search);
+    public ListMoviesResponseContent list(Integer page, Integer size, String search, String status, String dateFrom, String dateTo) {
+        logger.info("Executing ListMovies with page: {}, size: {}, search: {}, status: {}, dateFrom: {}, dateTo: {}", 
+                   page, size, search, status, dateFrom, dateTo);
         
         try {
-            List<Movie> movies;
-            if (search != null && !search.trim().isEmpty()) {
-                movies = movieRepositoryPort.findBySearchTerm(search, page, size);
-            } else {
-                movies = movieRepositoryPort.findAll();
+            // Apply default values
+            String effectiveStatus = (status == null || status.trim().isEmpty()) ? "ACTIVE" : status;
+            String effectiveDateFrom = dateFrom;
+            String effectiveDateTo = dateTo;
+            
+            if (effectiveDateFrom == null || effectiveDateFrom.trim().isEmpty()) {
+                effectiveDateFrom = java.time.Instant.now().minus(30, java.time.temporal.ChronoUnit.DAYS).toString();
             }
+            if (effectiveDateTo == null || effectiveDateTo.trim().isEmpty()) {
+                effectiveDateTo = java.time.Instant.now().toString();
+            }
+            
+            logger.info("Effective filters - status: {}, dateFrom: {}, dateTo: {}", 
+                       effectiveStatus, effectiveDateFrom, effectiveDateTo);
+            
+            List<Movie> movies = movieRepositoryPort.findByFilters(
+                search, effectiveStatus, effectiveDateFrom, effectiveDateTo, page, size);
+            
             logger.info("Retrieved {} movies successfully", movies.size());
             return movieMapper.toListResponse(movies, page != null ? page : 1, size != null ? size : 20);
         } catch (Exception e) {

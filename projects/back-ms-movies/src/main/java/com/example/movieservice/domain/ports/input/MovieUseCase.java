@@ -24,6 +24,6 @@ public interface MovieUseCase {
 
     DeleteMovieResponseContent delete(String movieId);
 
-    ListMoviesResponseContent list(Integer page, Integer size, String search);
+    ListMoviesResponseContent list(Integer page, Integer size, String search, String status, String dateFrom, String dateTo);
 
 }

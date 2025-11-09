@@ -121,16 +121,29 @@ public class LocationService implements LocationUseCase {
     }
 
     @Override
-    public ListLocationsResponseContent list(Integer page, Integer size, String search) {
-        logger.info("Executing ListLocations with page: {}, size: {}, search: {}", page, size, search);
+    public ListLocationsResponseContent list(Integer page, Integer size, String search, String status, String dateFrom, String dateTo) {
+        logger.info("Executing ListLocations with page: {}, size: {}, search: {}, status: {}, dateFrom: {}, dateTo: {}", 
+                   page, size, search, status, dateFrom, dateTo);
         
         try {
-            List<Location> locations;
-            if (search != null && !search.trim().isEmpty()) {
-                locations = locationRepositoryPort.findBySearchTerm(search, page, size);
-            } else {
-                locations = locationRepositoryPort.findAll();
+            // Apply default values
+            String effectiveStatus = (status == null || status.trim().isEmpty()) ? "ACTIVE" : status;
+            String effectiveDateFrom = dateFrom;
+            String effectiveDateTo = dateTo;
+            
+            if (effectiveDateFrom == null || effectiveDateFrom.trim().isEmpty()) {
+                effectiveDateFrom = java.time.Instant.now().minus(30, java.time.temporal.ChronoUnit.DAYS).toString();
             }
+            if (effectiveDateTo == null || effectiveDateTo.trim().isEmpty()) {
+                effectiveDateTo = java.time.Instant.now().toString();
+            }
+            
+            logger.info("Effective filters - status: {}, dateFrom: {}, dateTo: {}", 
+                       effectiveStatus, effectiveDateFrom, effectiveDateTo);
+            
+            List<Location> locations = locationRepositoryPort.findByFilters(
+                search, effectiveStatus, effectiveDateFrom, effectiveDateTo, page, size);
+            
             logger.info("Retrieved {} locations successfully", locations.size());
             return locationMapper.toListResponse(locations, page != null ? page : 1, size != null ? size : 20);
         } catch (Exception e) {

@@ -155,7 +155,7 @@ public class MovieController {
     }
 
     @GetMapping
-    @Operation(summary = "List Movies", description = "Retrieves a paginated list of Movies with optional search")
+    @Operation(summary = "List Movies", description = "Retrieves a paginated list of Movies with optional search, status filter and date range")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Movies retrieved successfully")
     })
@@ -166,6 +166,12 @@ public class MovieController {
             @RequestParam(defaultValue = "20") Integer size,
             @Parameter(description = "Search term for filtering")
             @RequestParam(required = false) String search,
+            @Parameter(description = "Movie status filter (ACTIVE, INACTIVE, PENDING, SUSPENDED, DELETED). Default: ACTIVE")
+            @RequestParam(required = false) String status,
+            @Parameter(description = "Start date for filtering by createdAt (ISO format: 2024-01-01T00:00:00Z)")
+            @RequestParam(required = false) String dateFrom,
+            @Parameter(description = "End date for filtering by createdAt (ISO format: 2024-12-31T23:59:59Z)")
+            @RequestParam(required = false) String dateTo,
             @Parameter(description = "Unique request identifier", required = true)
             @RequestHeader("X-Request-ID") String requestId,
             @Parameter(description = "Correlation identifier for transaction tracking")
@@ -174,8 +180,9 @@ public class MovieController {
             @RequestHeader(value = "X-Client-Id", required = false) String clientId) {
         LoggingUtils.setRequestContext(requestId, correlationId, clientId);
         try {
-            logger.info("Listing movies with page: {}, size: {}, search: {}", page, size, search);
-            ListMoviesResponseContent response = movieUseCase.list(page, size, search);
+            logger.info("Listing movies with page: {}, size: {}, search: {}, status: {}, dateFrom: {}, dateTo: {}", 
+                       page, size, search, status, dateFrom, dateTo);
+            ListMoviesResponseContent response = movieUseCase.list(page, size, search, status, dateFrom, dateTo);
             return ResponseEntity.ok(response);
         } finally {
             LoggingUtils.clearRequestContext();

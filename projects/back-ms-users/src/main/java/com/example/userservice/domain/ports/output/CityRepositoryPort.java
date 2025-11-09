@@ -26,6 +26,8 @@ public interface CityRepositoryPort {
     
     List<City> findBySearchTerm(String search, Integer page, Integer size);
     
+    List<City> findByFilters(String search, String status, String dateFrom, String dateTo, Integer page, Integer size);
+    
     List<City> findAllPaged(Integer page, Integer size);
     
     void deleteById(String id);

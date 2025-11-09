@@ -23,6 +23,6 @@ public interface RentalUseCase {
     UpdateRentalResponseContent update(String rentalId, UpdateRentalRequestContent request);
 
 
-    ListRentalsResponseContent list(Integer page, Integer size, String search);
+    ListRentalsResponseContent list(Integer page, Integer size, String search, String status, String dateFrom, String dateTo);
 
 }

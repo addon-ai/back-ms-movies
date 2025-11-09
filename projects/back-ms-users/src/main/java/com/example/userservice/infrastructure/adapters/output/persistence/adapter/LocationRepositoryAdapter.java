@@ -118,6 +118,32 @@ public class LocationRepositoryAdapter implements LocationRepositoryPort {
         }
     }
     
+    @Override
+    public List<Location> findByFilters(String search, String status, String dateFrom, String dateTo, Integer page, Integer size) {
+        log.debug("Searching Locations with filters - search: {}, status: {}, dateFrom: {}, dateTo: {}, page: {}, size: {}", 
+                 search, status, dateFrom, dateTo, page, size);
+        try {
+            org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(
+                page != null && page > 0 ? page - 1 : 0, 
+                size != null && size > 0 ? size : 20
+            );
+            
+            return jpaRepository.findByFilters(
+                search != null ? search : "", 
+                status != null ? status : "",
+                dateFrom != null ? dateFrom : "",
+                dateTo != null ? dateTo : "",
+                pageable
+            ).map(mapper::toDomain).getContent();
+        } catch (org.springframework.dao.DuplicateKeyException | org.springframework.dao.DataIntegrityViolationException e) {
+            log.error("Database constraint violation while filtering Locations: {}", e.getMessage(), e);
+            throw e;
+        } catch (Exception e) {
+            log.error("Database error while filtering Locations: {}", e.getMessage(), e);
+            throw new InternalServerErrorException("Failed to filter Locations", e);
+        }
+    }
+    
     // Additional business methods with pagination
     public Page<Location> findBySearchTermPaged(String search, org.springframework.data.domain.Pageable pageable) {
         log.debug("Searching Locations with term: {} and pagination: {}", search, pageable);

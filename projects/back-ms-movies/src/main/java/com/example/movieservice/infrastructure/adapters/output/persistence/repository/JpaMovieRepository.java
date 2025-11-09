@@ -49,6 +49,25 @@ public interface JpaMovieRepository extends JpaRepository<MovieDbo, UUID> {
     Long countBySearchTerm(@Param("search") String search);
     
     /**
+     * Find entities with combined filters including status and date range.
+     */
+    @Query("SELECT e FROM MovieDbo e WHERE " +
+           "(:search IS NULL OR :search = '' OR " +
+           "LOWER(e.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.lastName) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "AND (:status IS NULL OR :status = '' OR e.status = :status) " +
+           "AND (:dateFrom IS NULL OR :dateFrom = '' OR e.createdAt >= CAST(:dateFrom AS TIMESTAMP)) " +
+           "AND (:dateTo IS NULL OR :dateTo = '' OR e.createdAt <= CAST(:dateTo AS TIMESTAMP)) " +
+           "ORDER BY e.createdAt DESC")
+    Page<MovieDbo> findByFilters(@Param("search") String search, 
+                                          @Param("status") String status,
+                                          @Param("dateFrom") String dateFrom,
+                                          @Param("dateTo") String dateTo,
+                                          Pageable pageable);
+    
+    /**
      * Find all entities with pagination.
      */
     @Query("SELECT e FROM MovieDbo e ORDER BY e.createdAt DESC")

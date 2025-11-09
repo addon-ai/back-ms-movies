@@ -27,7 +27,7 @@ public interface LocationUseCase {
 
     DeleteLocationResponseContent delete(String locationId);
 
-    ListLocationsResponseContent list(Integer page, Integer size, String search);
+    ListLocationsResponseContent list(Integer page, Integer size, String search, String status, String dateFrom, String dateTo);
 
     GetNeighborhoodsByCityResponseContent getNeighborhoodsByCity();
     GetRegionsByCountryResponseContent getRegionsByCountry();

@@ -38,7 +38,7 @@ public interface {{entityName}}UseCase {
 {{/hasDelete}}
 
 {{#hasList}}
-    List{{entityName}}sResponseContent list(Integer page, Integer size, String search);
+    List{{entityName}}sResponseContent list(Integer page, Integer size, String search, String status, String dateFrom, String dateTo);
 {{/hasList}}
 
 {{#hasComplexOperations}}

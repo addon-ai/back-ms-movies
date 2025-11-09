@@ -24,6 +24,6 @@ public interface UserUseCase {
 
     DeleteUserResponseContent delete(String userId);
 
-    ListUsersResponseContent list(Integer page, Integer size, String search);
+    ListUsersResponseContent list(Integer page, Integer size, String search, String status, String dateFrom, String dateTo);
 
 }

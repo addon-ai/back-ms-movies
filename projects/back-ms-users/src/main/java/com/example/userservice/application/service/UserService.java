@@ -118,16 +118,29 @@ public class UserService implements UserUseCase {
     }
 
     @Override
-    public ListUsersResponseContent list(Integer page, Integer size, String search) {
-        logger.info("Executing ListUsers with page: {}, size: {}, search: {}", page, size, search);
+    public ListUsersResponseContent list(Integer page, Integer size, String search, String status, String dateFrom, String dateTo) {
+        logger.info("Executing ListUsers with page: {}, size: {}, search: {}, status: {}, dateFrom: {}, dateTo: {}", 
+                   page, size, search, status, dateFrom, dateTo);
         
         try {
-            List<User> users;
-            if (search != null && !search.trim().isEmpty()) {
-                users = userRepositoryPort.findBySearchTerm(search, page, size);
-            } else {
-                users = userRepositoryPort.findAll();
+            // Apply default values
+            String effectiveStatus = (status == null || status.trim().isEmpty()) ? "ACTIVE" : status;
+            String effectiveDateFrom = dateFrom;
+            String effectiveDateTo = dateTo;
+            
+            if (effectiveDateFrom == null || effectiveDateFrom.trim().isEmpty()) {
+                effectiveDateFrom = java.time.Instant.now().minus(30, java.time.temporal.ChronoUnit.DAYS).toString();
             }
+            if (effectiveDateTo == null || effectiveDateTo.trim().isEmpty()) {
+                effectiveDateTo = java.time.Instant.now().toString();
+            }
+            
+            logger.info("Effective filters - status: {}, dateFrom: {}, dateTo: {}", 
+                       effectiveStatus, effectiveDateFrom, effectiveDateTo);
+            
+            List<User> users = userRepositoryPort.findByFilters(
+                search, effectiveStatus, effectiveDateFrom, effectiveDateTo, page, size);
+            
             logger.info("Retrieved {} users successfully", users.size());
             return userMapper.toListResponse(users, page != null ? page : 1, size != null ? size : 20);
         } catch (Exception e) {
