@@ -111,10 +111,10 @@ public interface {{classname}} {
     
     // Delete response method - available when delete DTO exists
     default Delete{{entityName}}ResponseContent toDeleteResponse({{entityName}} domain) {
-        return Delete{{entityName}}ResponseContent.builder()
-            .deleted(true)
-            .message("{{entityName}} deleted successfully")
-            .build();
+        Delete{{entityName}}ResponseContent response = new Delete{{entityName}}ResponseContent();
+        response.setDeleted(true);
+        response.setMessage("{{entityName}} deleted successfully");
+        return response;
     }
 {{/hasDeleteDto}}
     
@@ -125,13 +125,13 @@ public interface {{classname}} {
         
         int totalPages = (int) Math.ceil((double) totalCount / size);
         
-        return {{listResponseDtoName}}.builder()
-            .{{entityVarName}}s(toDtoList(domains))
-            .page(java.math.BigDecimal.valueOf(page))
-            .size(java.math.BigDecimal.valueOf(size))
-            .total(java.math.BigDecimal.valueOf(totalCount))
-            .totalPages(java.math.BigDecimal.valueOf(totalPages))
-            .build();
+        {{listResponseDtoName}} response = new {{listResponseDtoName}}();
+        response.set{{entityName}}s(toDtoList(domains));
+        response.setPage(java.math.BigDecimal.valueOf(page));
+        response.setSize(java.math.BigDecimal.valueOf(size));
+        response.setTotal(java.math.BigDecimal.valueOf(totalCount));
+        response.setTotalPages(java.math.BigDecimal.valueOf(totalPages));
+        return response;
     }
     
     // Overloaded method for backward compatibility
