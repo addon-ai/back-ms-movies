@@ -7,7 +7,7 @@ import com.example.movieservice.infrastructure.adapters.output.persistence.entit
 import com.example.movieservice.infrastructure.adapters.output.persistence.repository.JpaMovieRepository;
 import com.example.movieservice.application.mapper.MovieMapper;
 import com.example.movieservice.infrastructure.config.exceptions.InternalServerErrorException;
-import .LoggingUtils;
+import com.example.movieservice.utils.LoggingUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;

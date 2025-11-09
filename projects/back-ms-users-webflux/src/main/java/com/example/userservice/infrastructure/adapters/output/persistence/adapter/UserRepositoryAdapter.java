@@ -7,7 +7,7 @@ import com.example.userservice.infrastructure.adapters.output.persistence.entity
 import com.example.userservice.infrastructure.adapters.output.persistence.repository.JpaUserRepository;
 import com.example.userservice.application.mapper.UserMapper;
 import com.example.userservice.infrastructure.config.exceptions.InternalServerErrorException;
-import .LoggingUtils;
+import com.example.userservice.utils.LoggingUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
