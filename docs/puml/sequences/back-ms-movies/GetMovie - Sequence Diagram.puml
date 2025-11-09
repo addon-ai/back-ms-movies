@@ -1,0 +1,67 @@
+@startuml Get Movie
+!theme plain
+title Get Movie - Hexagonal Architecture Flow
+
+actor Client
+participant "MovieController\n(Input Adapter)" as Controller
+participant "MovieUseCase\n(Domain Port)" as UseCase
+participant "MovieMapper\n(Application Layer)" as Mapper
+participant "MovieRepositoryPort\n(Domain Port)" as RepoPort
+participant "MovieRepositoryAdapter\n(Output Adapter)" as RepoAdapter
+participant "JpaMovieRepository\n(Infrastructure)" as JpaRepo
+database "Database" as DB
+
+Client -> Controller: GET /movies/{movieId}
+activate Controller
+
+Controller -> UseCase: get(movieId)
+activate UseCase
+note right: UseCase is implemented by MovieService
+
+UseCase -> RepoPort: findById(movieId)
+activate RepoPort
+RepoPort -> RepoAdapter: findById(movieId)
+activate RepoAdapter
+RepoAdapter -> JpaRepo: findById(movieId)
+activate JpaRepo
+JpaRepo -> DB: SELECT * FROM movies WHERE id = ?
+DB --> JpaRepo: Optional<MovieDbo>
+JpaRepo --> RepoAdapter: Optional<MovieDbo>
+deactivate JpaRepo
+
+alt Movie Found
+    RepoAdapter -> Mapper: toDomain(MovieDbo)
+    activate Mapper
+    Mapper --> RepoAdapter: Movie
+    deactivate Mapper
+    
+    RepoAdapter --> RepoPort: Optional<Movie>
+    deactivate RepoAdapter
+    RepoPort --> UseCase: Optional<Movie>
+    deactivate RepoPort
+    
+    UseCase -> Mapper: toGetResponse(Movie)
+    activate Mapper
+    Mapper --> UseCase: GetMovieResponseContent
+    deactivate Mapper
+    
+    UseCase --> Controller: GetMovieResponseContent
+    deactivate UseCase
+    
+    Controller --> Client: HTTP 200
+    deactivate Controller
+
+else Movie Not Found
+    RepoAdapter --> RepoPort: Optional.empty()
+    deactivate RepoAdapter
+    RepoPort --> UseCase: Optional.empty()
+    deactivate RepoPort
+    
+    UseCase --> Controller: NotFoundException("Movie not found")
+    deactivate UseCase
+    
+    Controller --> Client: HTTP 404
+    deactivate Controller
+end
+
+@enduml
