@@ -1,0 +1,132 @@
+'This diagram can be visualized at: https://www.planttext.com/
+
+@startuml back-ms-users
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+skinparam componentStyle uml2
+skinparam linetype curved
+
+
+' Paquete para Entidades de Dominio
+package "entities" {
+    class "User" {
+      - userId: string <<required>>
+      - username: string <<required>>
+      - email: string <<required>>
+      - firstName: string
+      - lastName: string
+      - status: UserStatus <<required>>
+      - createdAt: number <<required>>
+      - updatedAt: number <<required>>
+    }
+    
+        enum "UserStatus" {
+      ACTIVE
+      INACTIVE
+      SUSPENDED
+    }
+    
+    }
+
+' Paquete para DTOs (Data Transfer Objects)
+package "dtos" {
+    class "CreateUserRequestContent" {
+      - username: string <<required>>
+      - email: string <<required>>
+      - password: string <<required>>
+      - firstName: string
+      - lastName: string
+    }
+    
+        class "CreateUserResponseContent" {
+      - userId: string <<required>>
+      - username: string <<required>>
+      - email: string <<required>>
+      - firstName: string
+      - lastName: string
+      - status: UserStatus <<required>>
+      - createdAt: number <<required>>
+      - updatedAt: number <<required>>
+    }
+    
+        class "DeleteUserResponseContent" {
+      - message: string <<required>>
+      - deleted: boolean <<required>>
+    }
+    
+        class "GetUserResponseContent" {
+      - userId: string <<required>>
+      - username: string <<required>>
+      - email: string <<required>>
+      - firstName: string
+      - lastName: string
+      - status: UserStatus <<required>>
+      - createdAt: number <<required>>
+      - updatedAt: number <<required>>
+    }
+    
+        class "ListUsersResponseContent" {
+      - users: array <<required>>
+      - page: number <<required>>
+      - size: number <<required>>
+      - total: number <<required>>
+      - totalPages: number <<required>>
+    }
+    
+        class "UpdateUserRequestContent" {
+      - firstName: string
+      - lastName: string
+      - email: string
+    }
+    
+        class "UpdateUserResponseContent" {
+      - userId: string <<required>>
+      - username: string <<required>>
+      - email: string <<required>>
+      - firstName: string
+      - lastName: string
+      - status: UserStatus <<required>>
+      - createdAt: number <<required>>
+      - updatedAt: number <<required>>
+    }
+    
+        class "CreateUserRequest" {
+      - username: string <<required>>
+      - email: string <<required>>
+      - password: string <<required>>
+      - firstName: string
+      - lastName: string
+    }
+    
+        class "UpdateUserRequest" {
+      - userId: string <<required>>
+      - body: object <<required>>
+    }
+    
+    }
+
+' Paquete para DTOs de Errores/Excepciones
+package "Exceptions" {
+    class "ConflictErrorResponseContent" {
+      - message: string <<required>>
+    }
+    
+        class "NotFoundErrorResponseContent" {
+      - message: string <<required>>
+    }
+    
+        class "ValidationErrorResponseContent" {
+      - message: string <<required>>
+      - field: string <<required>>
+    }
+    
+    }
+
+
+' Relationships (now crossing package boundaries)
+dtos.CreateUserResponseContent --> entities.UserStatus
+dtos.GetUserResponseContent --> entities.UserStatus
+dtos.UpdateUserResponseContent --> entities.UserStatus
+entities.User --> entities.UserStatus
+
+@enduml
