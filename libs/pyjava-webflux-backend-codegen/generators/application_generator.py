@@ -161,10 +161,12 @@ class ApplicationGenerator:
             for op in complex_ops:
                 if self.file_manager.check_dto_exists(dto_base_path, f'{op}ResponseContent'):
                     method_name = op[0].lower() + op[1:] if op else ''
+                    path_info = self._extract_path_info_from_operation(op)
                     complex_ops_info.append({
                         'operationId': op,
                         'methodName': method_name,
-                        'responseType': f'{op}ResponseContent'
+                        'responseType': f'{op}ResponseContent',
+                        'pathVariables': path_info['pathVariables']
                     })
         
         context = mustache_context.copy()
@@ -203,13 +205,13 @@ class ApplicationGenerator:
             for op in complex_ops:
                 method_name = op[0].lower() + op[1:] if op else ''
                 repository_method = self._convert_operation_to_repository_method(op)
-                default_param = self._get_default_parameter(op)
+                path_info = self._extract_path_info_from_operation(op)
                 complex_ops_info.append({
                     'operationId': op,
                     'methodName': method_name,
                     'responseType': f'{op}ResponseContent',
                     'repositoryMethod': repository_method,
-                    'defaultParameter': default_param
+                    'pathVariables': path_info['pathVariables']
                 })
         
         context = mustache_context.copy()
@@ -249,3 +251,54 @@ class ApplicationGenerator:
         elif 'ByRegion' in operation_id:
             return '"defaultRegionId"'
         return '"defaultId"'
+    
+    def _extract_path_info_from_operation(self, operation_id: str):
+        """Extract path information from OpenAPI specs for any operation."""
+        import glob
+        import json
+        import re
+        
+        path_variables = []
+        path_segment = ''
+        
+        # Load OpenAPI specs to find the actual URI pattern
+        openapi_files = glob.glob("build/smithy/*/openapi/*.openapi.json")
+        
+        for file_path in openapi_files:
+            try:
+                with open(file_path, 'r') as f:
+                    spec = json.load(f)
+                    paths = spec.get('paths', {})
+                    
+                    for path, methods in paths.items():
+                        for method, operation_data in methods.items():
+                            if operation_data.get('operationId') == operation_id:
+                                # Extract path variables from URI pattern
+                                path_vars = re.findall(r'\{([^}]+)\}', path)
+                                for var_name in path_vars:
+                                    # Determine type based on naming convention
+                                    var_type = 'String' if var_name.endswith('Id') or var_name.endswith('_id') else 'String'
+                                    path_variables.append({'name': var_name, 'type': var_type})
+                                
+                                # Remove leading slash and use as path segment
+                                path_segment = path.lstrip('/')
+                                break
+                        if path_segment:
+                            break
+                    if path_segment:
+                        break
+            except (json.JSONDecodeError, FileNotFoundError):
+                continue
+        
+        # Fallback if not found in OpenAPI specs
+        if not path_segment:
+            path_segment = operation_id.lower().replace('get', '')
+        
+        # Set hasMore flag for comma separation
+        for i, var in enumerate(path_variables):
+            var['hasMore'] = i < len(path_variables) - 1
+        
+        return {
+            'pathSegment': path_segment,
+            'pathVariables': path_variables
+        }

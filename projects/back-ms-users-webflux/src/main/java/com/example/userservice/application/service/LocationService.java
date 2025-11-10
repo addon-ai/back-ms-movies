@@ -128,42 +128,42 @@ public class LocationService implements LocationUseCase {
     }
 
     @Override
-    public Mono<GetNeighborhoodsByCityResponseContent> getNeighborhoodsByCity() {
-        logger.info("Executing GetNeighborhoodsByCity");
+    public Mono<GetNeighborhoodsByCityResponseContent> getNeighborhoodsByCity(String cityId) {
+        logger.info("Executing GetNeighborhoodsByCity with cityId: {}", cityId);
         
-        return locationRepositoryPort.findNeighborhoodsByCity("defaultCityId")
+        return locationRepositoryPort.findNeighborhoodsByCity(cityId)
                 .collectList()
                 .map(locations -> {
                     logger.info("Retrieved {} locations successfully", locations.size());
                     return GetNeighborhoodsByCityResponseContent.builder().build();
                 })
-                .doOnError(e -> logger.error("Error in GetNeighborhoodsByCity", e));
+                .doOnError(e -> logger.error("Error in GetNeighborhoodsByCity", e, cityId));
     }
 
     @Override
-    public Mono<GetRegionsByCountryResponseContent> getRegionsByCountry() {
-        logger.info("Executing GetRegionsByCountry");
+    public Mono<GetRegionsByCountryResponseContent> getRegionsByCountry(String countryId) {
+        logger.info("Executing GetRegionsByCountry with countryId: {}", countryId);
         
-        return locationRepositoryPort.findRegionsByCountry("defaultCountryId")
+        return locationRepositoryPort.findRegionsByCountry(countryId)
                 .collectList()
                 .map(locations -> {
                     logger.info("Retrieved {} locations successfully", locations.size());
                     return GetRegionsByCountryResponseContent.builder().build();
                 })
-                .doOnError(e -> logger.error("Error in GetRegionsByCountry", e));
+                .doOnError(e -> logger.error("Error in GetRegionsByCountry", e, countryId));
     }
 
     @Override
-    public Mono<GetCitiesByRegionResponseContent> getCitiesByRegion() {
-        logger.info("Executing GetCitiesByRegion");
+    public Mono<GetCitiesByRegionResponseContent> getCitiesByRegion(String regionId) {
+        logger.info("Executing GetCitiesByRegion with regionId: {}", regionId);
         
-        return locationRepositoryPort.findCitiesByRegion("defaultRegionId")
+        return locationRepositoryPort.findCitiesByRegion(regionId)
                 .collectList()
                 .map(locations -> {
                     logger.info("Retrieved {} locations successfully", locations.size());
                     return GetCitiesByRegionResponseContent.builder().build();
                 })
-                .doOnError(e -> logger.error("Error in GetCitiesByRegion", e));
+                .doOnError(e -> logger.error("Error in GetCitiesByRegion", e, regionId));
     }
 
 }

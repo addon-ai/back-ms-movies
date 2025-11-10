@@ -31,7 +31,7 @@ public interface LocationUseCase {
 
     Mono<ListLocationsResponseContent> list(Integer page, Integer size, String search, String status, String dateFrom, String dateTo);
 
-    Mono<GetNeighborhoodsByCityResponseContent> getNeighborhoodsByCity();
-    Mono<GetRegionsByCountryResponseContent> getRegionsByCountry();
-    Mono<GetCitiesByRegionResponseContent> getCitiesByRegion();
+    Mono<GetNeighborhoodsByCityResponseContent> getNeighborhoodsByCity(String cityId);
+    Mono<GetRegionsByCountryResponseContent> getRegionsByCountry(String countryId);
+    Mono<GetCitiesByRegionResponseContent> getCitiesByRegion(String regionId);
 }

@@ -142,16 +142,16 @@ public class {{entityName}}Service implements {{entityName}}UseCase {
 {{#hasComplexOperations}}
 {{#complexOperations}}
     @Override
-    public Mono<{{responseType}}> {{methodName}}() {
-        logger.info("Executing {{operationId}}");
+    public Mono<{{responseType}}> {{methodName}}({{#pathVariables}}{{type}} {{name}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}) {
+        logger.info("Executing {{operationId}} with {{#pathVariables}}{{name}}: {}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}", {{#pathVariables}}{{name}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}});
         
-        return {{entityVarName}}RepositoryPort.{{repositoryMethod}}({{defaultParameter}})
+        return {{entityVarName}}RepositoryPort.{{repositoryMethod}}({{#pathVariables}}{{name}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}})
                 .collectList()
                 .map({{entityVarName}}s -> {
                     logger.info("Retrieved {} {{entityVarName}}s successfully", {{entityVarName}}s.size());
                     return {{responseType}}.builder().build();
                 })
-                .doOnError(e -> logger.error("Error in {{operationId}}", e));
+                .doOnError(e -> logger.error("Error in {{operationId}}", e{{#pathVariables}}, {{name}}{{/pathVariables}}));
     }
 
 {{/complexOperations}}

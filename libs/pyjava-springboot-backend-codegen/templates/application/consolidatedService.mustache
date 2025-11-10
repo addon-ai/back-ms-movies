@@ -173,15 +173,15 @@ public class {{entityName}}Service implements {{entityName}}UseCase {
 {{#hasComplexOperations}}
 {{#complexOperations}}
     @Override
-    public {{responseType}} {{methodName}}({{#hasPathVariables}}{{#pathVariables}}String {{name}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}}) {
-        logger.info("Executing {{operationId}}{{#hasPathVariables}} with {{#pathVariables}}{{name}}: {}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}}", {{#hasPathVariables}}{{#pathVariables}}{{name}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}});
+    public {{responseType}} {{methodName}}({{#pathVariables}}{{type}} {{name}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}) {
+        logger.info("Executing {{operationId}} with {{#pathVariables}}{{name}}: {}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}", {{#pathVariables}}{{name}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}});
         
         try {
-            List<{{entityName}}> {{entityVarName}}s = {{entityVarName}}RepositoryPort.{{repositoryMethod}}({{#hasPathVariables}}{{#pathVariables}}{{name}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}});
+            List<{{entityName}}> {{entityVarName}}s = {{entityVarName}}RepositoryPort.{{repositoryMethod}}({{#pathVariables}}{{name}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}});
             logger.info("Retrieved {} {{entityVarName}}s successfully", {{entityVarName}}s.size());
             return {{responseType}}.builder().build();
         } catch (Exception e) {
-            logger.error("Error in {{operationId}}", e{{#hasPathVariables}}, {{#pathVariables}}{{name}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}});
+            logger.error("Error in {{operationId}}", e{{#pathVariables}}, {{name}}{{/pathVariables}});
             throw e;
         }
     }

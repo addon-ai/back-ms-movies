@@ -43,7 +43,7 @@ public interface {{entityName}}UseCase {
 
 {{#hasComplexOperations}}
 {{#complexOperations}}
-    {{responseType}} {{methodName}}({{#hasPathVariables}}{{#pathVariables}}String {{name}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}});
+    {{responseType}} {{methodName}}({{#pathVariables}}{{type}} {{name}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}});
 {{/complexOperations}}
 {{/hasComplexOperations}}
 }

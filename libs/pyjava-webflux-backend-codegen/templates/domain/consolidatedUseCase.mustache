@@ -45,7 +45,7 @@ public interface {{entityName}}UseCase {
 
 {{#hasComplexOperations}}
 {{#complexOperations}}
-    Mono<{{responseType}}> {{methodName}}();
+    Mono<{{responseType}}> {{methodName}}({{#pathVariables}}{{type}} {{name}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}});
 {{/complexOperations}}
 {{/hasComplexOperations}}
 }
