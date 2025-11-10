@@ -54,6 +54,8 @@ public interface {{classname}} {
     
     Flux<{{entityName}}> findBySearchTerm(String search, Integer page, Integer size);
     
+    Flux<{{entityName}}> findByFilters(String search, String status, String dateFrom, String dateTo, Integer page, Integer size);
+    
     Flux<{{entityName}}> findAllPaged(Integer page, Integer size);
     
     Mono<Void> deleteById(String id);

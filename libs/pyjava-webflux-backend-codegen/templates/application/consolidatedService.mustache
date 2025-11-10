@@ -110,17 +110,18 @@ public class {{entityName}}Service implements {{entityName}}UseCase {
 
 {{#hasList}}
     @Override
-    public Mono<List{{entityName}}sResponseContent> list(Integer page, Integer size, String search) {
-        logger.info("Executing List{{entityName}}s with page: {}, size: {}, search: {}", page, size, search);
+    public Mono<List{{entityName}}sResponseContent> list(Integer page, Integer size, String search, String status, String dateFrom, String dateTo) {
+        // Apply default values
+        String effectiveStatus = (status == null || status.trim().isEmpty()) ? "ACTIVE" : status;
+        String effectiveDateFrom = (dateFrom == null || dateFrom.trim().isEmpty()) ? 
+            java.time.Instant.now().minus(30, java.time.temporal.ChronoUnit.DAYS).toString() : dateFrom;
+        String effectiveDateTo = (dateTo == null || dateTo.trim().isEmpty()) ? 
+            java.time.Instant.now().toString() : dateTo;
         
-        Flux<{{entityName}}> {{entityVarName}}Flux;
-        if (search != null && !search.trim().isEmpty()) {
-            {{entityVarName}}Flux = {{entityVarName}}RepositoryPort.findBySearchTerm(search, page, size);
-        } else {
-            {{entityVarName}}Flux = {{entityVarName}}RepositoryPort.findAll();
-        }
+        logger.info("Executing List{{entityName}}s with page: {}, size: {}, search: {}, status: {} (effective: {}), dateFrom: {} (effective: {}), dateTo: {} (effective: {})", 
+                   page, size, search, status, effectiveStatus, dateFrom, effectiveDateFrom, dateTo, effectiveDateTo);
         
-        return {{entityVarName}}Flux
+        return {{entityVarName}}RepositoryPort.findByFilters(search, effectiveStatus, effectiveDateFrom, effectiveDateTo, page, size)
                 .collectList()
                 .map({{entityVarName}}s -> {
                     logger.info("Retrieved {} {{entityVarName}}s successfully", {{entityVarName}}s.size());

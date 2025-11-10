@@ -52,6 +52,27 @@ public interface {{classname}} extends R2dbcRepository<{{entityName}}Dbo, UUID> 
     Mono<Long> countBySearchTerm(@Param("search") String search);
     
     /**
+     * Find entities with comprehensive filtering.
+     */
+    @Query("SELECT * FROM {{tableName}} u WHERE " +
+           "(:search IS NULL OR :search = '' OR " +
+           "LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(u.first_name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(u.last_name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "AND (:status IS NULL OR :status = '' OR u.status = :status) " +
+           "AND (:dateFrom IS NULL OR :dateFrom = '' OR u.created_at >= CAST(:dateFrom AS TIMESTAMP)) " +
+           "AND (:dateTo IS NULL OR :dateTo = '' OR u.created_at <= CAST(:dateTo AS TIMESTAMP)) " +
+           "ORDER BY u.created_at DESC " +
+           "LIMIT :limit OFFSET :offset")
+    Flux<{{entityName}}Dbo> findByFilters(@Param("search") String search,
+                                          @Param("status") String status,
+                                          @Param("dateFrom") String dateFrom,
+                                          @Param("dateTo") String dateTo,
+                                          @Param("limit") Long limit,
+                                          @Param("offset") Long offset);
+    
+    /**
      * Find all entities with pagination.
      */
     @Query("SELECT * FROM {{tableName}} u ORDER BY u.created_at DESC LIMIT :limit OFFSET :offset")
@@ -171,6 +192,20 @@ public class {{classname}} implements {{portName}} {
         return r2dbcRepository.findBySearchTerm(search, limit, offset)
                 .map(mapper::toDomain)
                 .doOnError(e -> logger.error("Database error while searching {{entityNamePlural}}", e, search))
+                .onErrorMap(this::mapRepositoryException);
+    }
+    
+    @Override
+    public Flux<{{entityName}}> findByFilters(String search, String status, String dateFrom, String dateTo, Integer page, Integer size) {
+        logger.debug("Searching {{entityNamePlural}} with filters - search: {}, status: {}, dateFrom: {}, dateTo: {}, page: {}, size: {}", 
+                    search, status, dateFrom, dateTo, page, size);
+        
+        long limit = size != null && size > 0 ? size : 20L;
+        long offset = page != null && page > 0 ? (page - 1) * limit : 0L;
+        
+        return r2dbcRepository.findByFilters(search, status, dateFrom, dateTo, limit, offset)
+                .map(mapper::toDomain)
+                .doOnError(e -> logger.error("Database error while searching {{entityNamePlural}} with filters", e))
                 .onErrorMap(this::mapRepositoryException);
     }
     
