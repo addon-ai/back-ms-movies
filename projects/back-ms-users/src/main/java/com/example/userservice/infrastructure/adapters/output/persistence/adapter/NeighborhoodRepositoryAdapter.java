@@ -43,7 +43,7 @@ public class NeighborhoodRepositoryAdapter implements NeighborhoodRepositoryPort
             NeighborhoodDbo dbo = mapper.toDbo(neighborhood);
             NeighborhoodDbo savedDbo = jpaRepository.save(dbo);
             return mapper.toDomain(savedDbo);
-        } catch (org.springframework.dao.DuplicateKeyException | org.springframework.dao.DataIntegrityViolationException e) {
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
             log.error("Database constraint violation while saving Neighborhood: {}", e.getMessage(), e);
             throw e; // Propagate business exceptions to service layer
         } catch (Exception e) {
@@ -109,7 +109,7 @@ public class NeighborhoodRepositoryAdapter implements NeighborhoodRepositoryPort
             return jpaRepository.findBySearchTerm(search != null ? search : "", pageable)
                     .map(mapper::toDomain)
                     .getContent();
-        } catch (org.springframework.dao.DuplicateKeyException | org.springframework.dao.DataIntegrityViolationException e) {
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
             log.error("Database constraint violation while searching Neighborhoods: {}", e.getMessage(), e);
             throw e;
         } catch (Exception e) {
@@ -135,7 +135,7 @@ public class NeighborhoodRepositoryAdapter implements NeighborhoodRepositoryPort
                 dateTo != null ? dateTo : "",
                 pageable
             ).map(mapper::toDomain).getContent();
-        } catch (org.springframework.dao.DuplicateKeyException | org.springframework.dao.DataIntegrityViolationException e) {
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
             log.error("Database constraint violation while filtering Neighborhoods: {}", e.getMessage(), e);
             throw e;
         } catch (Exception e) {

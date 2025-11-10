@@ -43,7 +43,7 @@ public class CityRepositoryAdapter implements CityRepositoryPort {
             CityDbo dbo = mapper.toDbo(city);
             CityDbo savedDbo = jpaRepository.save(dbo);
             return mapper.toDomain(savedDbo);
-        } catch (org.springframework.dao.DuplicateKeyException | org.springframework.dao.DataIntegrityViolationException e) {
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
             log.error("Database constraint violation while saving City: {}", e.getMessage(), e);
             throw e; // Propagate business exceptions to service layer
         } catch (Exception e) {
@@ -109,7 +109,7 @@ public class CityRepositoryAdapter implements CityRepositoryPort {
             return jpaRepository.findBySearchTerm(search != null ? search : "", pageable)
                     .map(mapper::toDomain)
                     .getContent();
-        } catch (org.springframework.dao.DuplicateKeyException | org.springframework.dao.DataIntegrityViolationException e) {
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
             log.error("Database constraint violation while searching Cities: {}", e.getMessage(), e);
             throw e;
         } catch (Exception e) {
@@ -135,7 +135,7 @@ public class CityRepositoryAdapter implements CityRepositoryPort {
                 dateTo != null ? dateTo : "",
                 pageable
             ).map(mapper::toDomain).getContent();
-        } catch (org.springframework.dao.DuplicateKeyException | org.springframework.dao.DataIntegrityViolationException e) {
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
             log.error("Database constraint violation while filtering Cities: {}", e.getMessage(), e);
             throw e;
         } catch (Exception e) {

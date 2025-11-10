@@ -43,7 +43,7 @@ public class MovieRepositoryAdapter implements MovieRepositoryPort {
             MovieDbo dbo = mapper.toDbo(movie);
             MovieDbo savedDbo = jpaRepository.save(dbo);
             return mapper.toDomain(savedDbo);
-        } catch (org.springframework.dao.DuplicateKeyException | org.springframework.dao.DataIntegrityViolationException e) {
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
             log.error("Database constraint violation while saving Movie: {}", e.getMessage(), e);
             throw e; // Propagate business exceptions to service layer
         } catch (Exception e) {
@@ -109,7 +109,7 @@ public class MovieRepositoryAdapter implements MovieRepositoryPort {
             return jpaRepository.findBySearchTerm(search != null ? search : "", pageable)
                     .map(mapper::toDomain)
                     .getContent();
-        } catch (org.springframework.dao.DuplicateKeyException | org.springframework.dao.DataIntegrityViolationException e) {
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
             log.error("Database constraint violation while searching Movies: {}", e.getMessage(), e);
             throw e;
         } catch (Exception e) {
@@ -135,7 +135,7 @@ public class MovieRepositoryAdapter implements MovieRepositoryPort {
                 dateTo != null ? dateTo : "",
                 pageable
             ).map(mapper::toDomain).getContent();
-        } catch (org.springframework.dao.DuplicateKeyException | org.springframework.dao.DataIntegrityViolationException e) {
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
             log.error("Database constraint violation while filtering Movies: {}", e.getMessage(), e);
             throw e;
         } catch (Exception e) {
