@@ -126,7 +126,16 @@ echo ""
 python3 "$PROJECT_ROOT/libs/utils/flyway_migration_copier.py"
 
 echo ""
-echo "🐙 Step 7: Synchronizing projects with GitHub repositories..."
+echo "🎯 Step 7: Generating Backstage files..."
+echo ""
+
+# Generate Backstage files in each project BEFORE GitHub sync
+python3 "$PROJECT_ROOT/libs/py-backstage-goldenpath-gen/main.py" \
+    "$CONFIG_PATH" \
+    "$PROJECT_ROOT/projects"
+
+echo ""
+echo "🐙 Step 8: Synchronizing projects with GitHub repositories...
 echo ""
 
 # Check if any project has GitHub integration enabled
@@ -158,16 +167,6 @@ if [ "$GITHUB_ENABLED" = "true" ]; then
 else
     echo "⚠️  GitHub integration disabled for all projects (devops.github.on = false)"
 fi
-
-echo ""
-echo ""
-echo "🎯 Step 8: Generating Backstage Golden Paths..."
-echo ""
-
-# Generate Backstage files in each project
-python3 "$PROJECT_ROOT/libs/py-backstage-goldenpath-gen/main.py" \
-    "$CONFIG_PATH" \
-    "$PROJECT_ROOT/projects"
 
 echo ""
 echo "💾 Committing pipeline changes..."
