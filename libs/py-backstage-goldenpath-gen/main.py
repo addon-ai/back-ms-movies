@@ -62,7 +62,9 @@ class BackstageFilesGenerator:
         
         # Generate catalog-info.yaml
         catalog_vars = {
-            'system_name': 'backend-services'
+            'system_name': 'backend-services',
+            'stack_type': stack_type,
+            'is_webflux': stack_type == 'webflux'
         }
         
         self._render_template('catalog-info.yaml.mustache', devops_path / 'catalog-info.yaml', catalog_vars)
