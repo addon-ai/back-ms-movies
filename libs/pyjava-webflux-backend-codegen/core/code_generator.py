@@ -16,6 +16,7 @@ from application_generator import ApplicationGenerator
 from infrastructure_generator import InfrastructureGenerator
 from test_generator import TestGenerator
 from project_generator import ProjectGenerator
+from test_schema_generator import TestSchemaGenerator
 
 
 class CodeGenerator:
@@ -64,6 +65,7 @@ class CodeGenerator:
             self.template_renderer, self.file_manager, self.target_packages,
             self.output_dir, self.project_config
         )
+        self.test_schema_generator = TestSchemaGenerator(self.output_dir)
     
     def generate_complete_project(self):
         """Generate complete Hexagonal Architecture project from OpenAPI specs."""
@@ -100,6 +102,9 @@ class CodeGenerator:
         # Generate test utilities
         self.test_generator.generate_logging_utils_test(self.mustache_context)
         self.test_generator.generate_logback_test_config(self.mustache_context)
+        
+        # Generate test schema
+        self.test_schema_generator.write_schema(list(all_entities), self.openapi_specs)
         
         self._print_generation_summary(all_schemas, all_operations, all_entities)
     

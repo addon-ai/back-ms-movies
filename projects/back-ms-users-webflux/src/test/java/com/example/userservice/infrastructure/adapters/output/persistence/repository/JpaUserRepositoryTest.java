@@ -28,8 +28,8 @@ class JpaUserRepositoryTest {
 
     private UserDbo createUserDbo() {
         return UserDbo.builder()
-            .username("test-username")
-            .email("test@example.com")
+            .username("test-username-" + UUID.randomUUID())
+            .email("test-" + UUID.randomUUID() + "@example.com")
             .status(EntityStatus.ACTIVE)
             .build();
     }

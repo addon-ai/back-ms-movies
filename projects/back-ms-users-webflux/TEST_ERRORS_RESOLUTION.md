@@ -166,6 +166,7 @@ Expected result: All tests should pass successfully.
 
 ## 🔗 References
 
+- [REPOSITORY_TEST_ERRORS_RESOLUTION.md](./REPOSITORY_TEST_ERRORS_RESOLUTION.md) - Follow-up repository test fixes
 - [Spring Data R2DBC Documentation](https://spring.io/projects/spring-data-r2dbc)
 - [R2DBC Specification](https://r2dbc.io/)
 - [Spring Boot Testing](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.testing)

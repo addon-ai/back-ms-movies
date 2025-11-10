@@ -28,9 +28,9 @@ class JpaRegionRepositoryTest {
 
     private RegionDbo createRegionDbo() {
         return RegionDbo.builder()
-            .name("test-name")
-            .code("test-code")
-            .countryId("test-countryId")
+            .name("test-name-" + UUID.randomUUID())
+            .code("test-code-" + UUID.randomUUID())
+            .countryId(UUID.randomUUID().toString())
             .status(EntityStatus.ACTIVE)
             .build();
     }

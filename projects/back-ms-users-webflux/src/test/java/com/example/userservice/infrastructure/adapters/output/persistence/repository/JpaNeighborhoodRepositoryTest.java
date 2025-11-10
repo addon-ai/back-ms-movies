@@ -28,8 +28,8 @@ class JpaNeighborhoodRepositoryTest {
 
     private NeighborhoodDbo createNeighborhoodDbo() {
         return NeighborhoodDbo.builder()
-            .name("test-name")
-            .cityId("test-cityId")
+            .name("test-name-" + UUID.randomUUID())
+            .cityId(UUID.randomUUID().toString())
             .status(EntityStatus.ACTIVE)
             .build();
     }

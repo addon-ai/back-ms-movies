@@ -27,14 +27,15 @@ class Jpa{{entityName}}RepositoryTest {
     private Jpa{{entityName}}Repository {{entityVarName}}Repository;
 
     private {{entityName}}Dbo create{{entityName}}Dbo() {
+        UUID randomUUID = UUID.randomUUID();
         return {{entityName}}Dbo.builder()
 {{#properties}}
 {{#required}}
 {{#isString}}
-            .{{name}}("test-{{name}}")
+            .{{name}}("test-{{name}}-" + randomUUID)
 {{/isString}}
 {{#isEmail}}
-            .{{name}}("test@example.com")
+            .{{name}}("test-" + randomUUID + "@example.com")
 {{/isEmail}}
 {{#isBoolean}}
             .{{name}}(true)
@@ -51,6 +52,9 @@ class Jpa{{entityName}}RepositoryTest {
 {{#isBigDecimal}}
             .{{name}}(java.math.BigDecimal.valueOf(1.0))
 {{/isBigDecimal}}
+{{#isForeignKey}}
+            .{{name}}(randomUUID.toString())
+{{/isForeignKey}}
 {{/required}}
 {{/properties}}
             .status(EntityStatus.ACTIVE)

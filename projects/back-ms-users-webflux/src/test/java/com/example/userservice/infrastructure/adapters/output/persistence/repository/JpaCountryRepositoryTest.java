@@ -28,8 +28,8 @@ class JpaCountryRepositoryTest {
 
     private CountryDbo createCountryDbo() {
         return CountryDbo.builder()
-            .name("test-name")
-            .code("test-code")
+            .name("test-name-" + UUID.randomUUID())
+            .code("test-code-" + UUID.randomUUID())
             .status(EntityStatus.ACTIVE)
             .build();
     }

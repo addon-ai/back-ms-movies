@@ -1,0 +1,13 @@
+-- Test Schema for H2 Database
+-- Automatically loaded by Spring Boot for tests
+
+{{#entities}}
+-- Table: {{tableName}}
+CREATE TABLE IF NOT EXISTS {{tableName}} (
+    {{primaryKey}} UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+{{#columns}}
+    {{columnName}} {{#isString}}VARCHAR(255){{/isString}}{{#isTimestamp}}TIMESTAMP{{/isTimestamp}}{{#isDouble}}DOUBLE PRECISION{{/isDouble}}{{#isBoolean}}BOOLEAN{{/isBoolean}}{{#isInteger}}INTEGER{{/isInteger}}{{#isLong}}BIGINT{{/isLong}}{{#isRequired}} NOT NULL{{/isRequired}}{{#hasDefault}} DEFAULT {{defaultValue}}{{/hasDefault}}{{#hasMore}},{{/hasMore}}
+{{/columns}}
+);
+
+{{/entities}}

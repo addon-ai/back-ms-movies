@@ -5,7 +5,8 @@ spring:
     enabled: false
   sql:
     init:
-      mode: never
+      mode: always
+      schema-locations: classpath:schema.sql
 
 logging:
   level:

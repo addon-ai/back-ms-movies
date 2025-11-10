@@ -27,9 +27,10 @@ class JpaCityRepositoryTest {
     private JpaCityRepository cityRepository;
 
     private CityDbo createCityDbo() {
+        UUID randomUUID = UUID.randomUUID();
         return CityDbo.builder()
-            .name("test-name")
-            .regionId("test-regionId")
+            .name("test-name-" + randomUUID)
+            .regionId(randomUUID.toString())
             .status(EntityStatus.ACTIVE)
             .build();
     }
