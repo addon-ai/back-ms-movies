@@ -33,11 +33,15 @@ class BackstageFilesGenerator:
             self.generate_backstage_files(project_path, project_config)
     
     def generate_backstage_files(self, project_path: Path, project_config: dict):
-        """Generate template.yaml and catalog-info.yaml in project directory."""
+        """Generate template.yaml and catalog-info.yaml in devops/ directory."""
         project_info = project_config['project']
         project_name = project_info['general']['name']
         stack_type = 'webflux' if 'webflux' in project_name.lower() else 'springboot'
         github_org = project_config.get('devops', {}).get('github', {}).get('organization', 'your-org')
+        
+        # Create devops directory
+        devops_path = project_path / 'devops'
+        devops_path.mkdir(exist_ok=True)
         
         # Generate template.yaml
         template_vars = {
@@ -51,16 +55,16 @@ class BackstageFilesGenerator:
             'github_org': github_org
         }
         
-        self._render_template('template.yaml.mustache', project_path / 'template.yaml', template_vars)
+        self._render_template('template.yaml.mustache', devops_path / 'template.yaml', template_vars)
         
         # Generate catalog-info.yaml
         catalog_vars = {
             'system_name': 'backend-services'
         }
         
-        self._render_template('catalog-info.yaml.mustache', project_path / 'catalog-info.yaml', catalog_vars)
+        self._render_template('catalog-info.yaml.mustache', devops_path / 'catalog-info.yaml', catalog_vars)
         
-        print(f"✅ Backstage files created in {project_path}")
+        print(f"✅ Backstage files created in {devops_path}")
     
     def _render_template(self, template_name: str, output_path: Path, context: dict):
         """Render a Mustache template."""

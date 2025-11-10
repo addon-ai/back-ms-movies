@@ -1,0 +1,110 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: back-ms-movies-template
+  title: Microservice for movie rental management
+  description: Microservice for movie rental management
+  tags:
+    - java
+    - springboot
+    - hexagonal-architecture
+spec:
+  owner: platform-team
+  type: service
+  
+  parameters:
+    - title: Información del Componente
+      required:
+        - component_id
+        - owner
+      properties:
+        component_id:
+          title: Nombre del Componente
+          type: string
+          description: Identificador único del componente (ej. user-service)
+          pattern: '^[a-z0-9-]+$'
+          ui:autofocus: true
+        description:
+          title: Descripción
+          type: string
+          description: Descripción breve del servicio
+        owner:
+          title: Propietario
+          type: string
+          description: Equipo propietario del componente
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group
+    
+    - title: Configuración Java
+      required:
+        - groupId
+      properties:
+        groupId:
+          title: Group ID
+          type: string
+          description: Group ID de Maven (ej. com.example)
+          default: com.example
+        javaVersion:
+          title: Versión de Java
+          type: string
+          description: Versión de Java a utilizar
+          default: "21"
+          enum:
+            - "17"
+            - "21"
+    
+    - title: Repositorio
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: URL del Repositorio
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+            allowedOwners:
+              - addon-ai
+
+  steps:
+    - id: fetch
+      name: Fetch Skeleton
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          component_id: ${{ parameters.component_id }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+          groupId: ${{ parameters.groupId }}
+          javaVersion: ${{ parameters.javaVersion }}
+          java_package_path: ${{ (parameters.groupId | replace(".", "/")) + "/" + (parameters.component_id | replace("-", "")) }}
+          java_package_name: ${{ parameters.groupId + "." + (parameters.component_id | replace("-", "")) }}
+
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        allowedHosts: ['github.com']
+        description: ${{ parameters.description }}
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: private
+        defaultBranch: main
+
+    - id: register
+      name: Register Component
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
