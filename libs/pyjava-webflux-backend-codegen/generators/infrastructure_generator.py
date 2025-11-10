@@ -94,7 +94,9 @@ class InfrastructureGenerator:
         search_conditions = []
         if search_fields:
             for field in search_fields:
-                search_conditions.append(f"LOWER(e.{field}) LIKE LOWER(CONCAT('%', :search, '%'))")
+                # Convert camelCase to snake_case for database column names
+                db_field = self._camel_to_snake(field)
+                search_conditions.append(f"LOWER(e.{db_field}) LIKE LOWER(CONCAT('%', :search, '%'))")
         else:
             search_conditions.append("LOWER(CAST(e.id AS string)) LIKE LOWER(CONCAT('%', :search, '%'))")
         

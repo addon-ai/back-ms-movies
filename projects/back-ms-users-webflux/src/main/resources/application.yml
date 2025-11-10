@@ -6,7 +6,7 @@ spring:
   r2dbc:
     url: ${DB_URL:r2dbc:postgresql://localhost:5432/back_ms_users_webflux_db}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:password123}
+    password: ${DB_PASSWORD:root}
   data:
     r2dbc:
       repositories:
@@ -14,7 +14,7 @@ spring:
   flyway:
     url: ${FLYWAY_URL:jdbc:postgresql://localhost:5432/back_ms_users_webflux_db}
     user: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:password123}
+    password: ${DB_PASSWORD:root}
     locations: classpath:db/migration
     baseline-on-migrate: true
     validate-on-migrate: false

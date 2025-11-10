@@ -14,7 +14,7 @@ import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
  * @author Jiliar Silgado <jiliar.silgado@gmail.com>
  * @version 1.0.0
  */
-@SpringBootApplication
+@SpringBootApplication(exclude = {org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration.class})
 @EnableR2dbcRepositories
 public class UserServiceWebFluxApplication {
 

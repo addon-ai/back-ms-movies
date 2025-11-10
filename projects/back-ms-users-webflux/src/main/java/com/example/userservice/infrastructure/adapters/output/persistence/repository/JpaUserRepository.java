@@ -29,7 +29,10 @@ public interface JpaUserRepository extends R2dbcRepository<UserDbo, UUID> {
      */
     @Query("SELECT * FROM users e WHERE " +
            "(:search IS NULL OR :search = '' OR " +
-           "LOWER(e.username) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.email) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.lastName) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "LOWER(e.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.first_name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.last_name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
            "ORDER BY e.created_at DESC " +
            "LIMIT :limit OFFSET :offset")
     Flux<UserDbo> findBySearchTerm(@Param("search") String search, 
@@ -41,7 +44,10 @@ public interface JpaUserRepository extends R2dbcRepository<UserDbo, UUID> {
      */
     @Query("SELECT COUNT(*) FROM users e WHERE " +
            "(:search IS NULL OR :search = '' OR " +
-           "LOWER(e.username) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.email) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.lastName) LIKE LOWER(CONCAT('%', :search, '%')))")
+           "LOWER(e.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.first_name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.last_name) LIKE LOWER(CONCAT('%', :search, '%')))")
     Mono<Long> countBySearchTerm(@Param("search") String search);
     
     /**
@@ -49,7 +55,10 @@ public interface JpaUserRepository extends R2dbcRepository<UserDbo, UUID> {
      */
     @Query("SELECT * FROM users e WHERE " +
            "(:search IS NULL OR :search = '' OR " +
-           "LOWER(e.username) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.email) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(e.lastName) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "LOWER(e.username) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.first_name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(e.last_name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
            "AND (:status IS NULL OR :status = '' OR e.status = :status) " +
            "AND (:dateFrom IS NULL OR :dateFrom = '' OR e.created_at >= CAST(:dateFrom AS TIMESTAMP)) " +
            "AND (:dateTo IS NULL OR :dateTo = '' OR e.created_at <= CAST(:dateTo AS TIMESTAMP)) " +
