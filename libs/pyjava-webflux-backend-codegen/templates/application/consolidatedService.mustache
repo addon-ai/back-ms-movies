@@ -96,14 +96,20 @@ public class {{entityName}}Service implements {{entityName}}UseCase {
         
         return {{entityVarName}}RepositoryPort.findById({{entityVarName}}Id)
                 .switchIfEmpty(Mono.error(new NotFoundException("{{entityName}} not found")))
-                .flatMap({{entityVarName}} -> {{entityVarName}}RepositoryPort.deleteById({{entityVarName}}Id))
-                .then(Mono.fromCallable(() -> {
-                    logger.info("{{entityName}} deleted successfully with ID: {}", {{entityVarName}}Id);
+                .map({{entityVarName}} -> {
+                    // Soft delete: update status to INACTIVE and set updatedAt
+                    {{entityVarName}}.setStatus("INACTIVE");
+                    {{entityVarName}}.setUpdatedAt(java.time.Instant.now().toString());
+                    return {{entityVarName}};
+                })
+                .flatMap({{entityVarName}}RepositoryPort::save)
+                .map(updated{{entityName}} -> {
+                    logger.info("{{entityName}} soft deleted (status set to INACTIVE) with ID: {}", {{entityVarName}}Id);
                     return Delete{{entityName}}ResponseContent.builder()
                             .deleted(true)
                             .message("{{entityName}} deleted successfully")
                             .build();
-                }))
+                })
                 .doOnError(e -> logger.error("Error in Delete{{entityName}}", e, {{entityVarName}}Id));
     }
 {{/hasDelete}}
