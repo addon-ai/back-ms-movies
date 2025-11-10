@@ -1,0 +1,53 @@
+@startuml List Locations
+!theme plain
+title List Locations - Hexagonal Architecture Flow
+
+actor Client
+participant "LocationController\n(Input Adapter)" as Controller
+participant "LocationUseCase\n(Domain Port)" as UseCase
+participant "LocationMapper\n(Application Layer)" as Mapper
+participant "LocationRepositoryPort\n(Domain Port)" as RepoPort
+participant "LocationRepositoryAdapter\n(Output Adapter)" as RepoAdapter
+participant "JpaLocationRepository\n(Infrastructure)" as JpaRepo
+database "Database" as DB
+
+Client -> Controller: GET /locations
+activate Controller
+
+Controller -> UseCase: list()
+activate UseCase
+note right: UseCase is implemented by LocationService
+
+UseCase -> RepoPort: findAll()
+activate RepoPort
+RepoPort -> RepoAdapter: findAll()
+activate RepoAdapter
+RepoAdapter -> JpaRepo: findAll()
+activate JpaRepo
+JpaRepo -> DB: SELECT * FROM locations
+DB --> JpaRepo: List<LocationDbo>
+JpaRepo --> RepoAdapter: List<LocationDbo>
+deactivate JpaRepo
+
+RepoAdapter -> Mapper: toDomainList(List<LocationDbo>)
+activate Mapper
+Mapper --> RepoAdapter: List<Location>
+deactivate Mapper
+
+RepoAdapter --> RepoPort: List<Location>
+deactivate RepoAdapter
+RepoPort --> UseCase: List<Location>
+deactivate RepoPort
+
+UseCase -> Mapper: toListResponse(List<Location>)
+activate Mapper
+Mapper --> UseCase: ListLocationResponseContent
+deactivate Mapper
+
+UseCase --> Controller: ListLocationResponseContent
+deactivate UseCase
+
+Controller --> Client: HTTP 200
+deactivate Controller
+
+@enduml

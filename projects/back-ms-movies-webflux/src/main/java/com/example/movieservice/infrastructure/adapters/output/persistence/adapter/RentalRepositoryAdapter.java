@@ -1,0 +1,151 @@
+
+package com.example.movieservice.infrastructure.adapters.output.persistence.adapter;
+
+import com.example.movieservice.domain.ports.output.RentalRepositoryPort;
+import com.example.movieservice.domain.model.Rental;
+import com.example.movieservice.infrastructure.adapters.output.persistence.entity.RentalDbo;
+import com.example.movieservice.infrastructure.adapters.output.persistence.repository.JpaRentalRepository;
+import com.example.movieservice.application.mapper.RentalMapper;
+import com.example.movieservice.infrastructure.config.exceptions.InternalServerErrorException;
+import com.example.movieservice.utils.LoggingUtils;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import java.util.UUID;
+
+/**
+ * Reactive repository adapter implementing the Rental domain port.
+ * <p>
+ * This adapter serves as the output adapter in Clean Architecture,
+ * implementing the domain repository interface and delegating to
+ * Spring Data R2DBC repository. It handles the conversion between
+ * domain objects and database entities using MapStruct in a reactive manner.
+ * </p>
+ * 
+ * @author Jiliar Silgado <jiliar.silgado@gmail.com>
+ * @version 1.0.0
+ */
+@Component
+@RequiredArgsConstructor
+public class RentalRepositoryAdapter implements RentalRepositoryPort {
+
+    private static final LoggingUtils logger = LoggingUtils.getLogger(RentalRepositoryAdapter.class);
+    
+    private final JpaRentalRepository r2dbcRepository;
+    private final RentalMapper mapper;
+
+    @Override
+    public Mono<Rental> save(Rental rental) {
+        logger.debug("Saving Rental: {}", rental);
+        return Mono.fromCallable(() -> mapper.toDbo(rental))
+                .flatMap(r2dbcRepository::save)
+                .map(mapper::toDomain)
+                .doOnError(e -> logger.error("Database error while saving Rental", e, rental))
+                .onErrorMap(this::mapRepositoryException);
+    }
+
+    private Throwable mapRepositoryException(Throwable ex) {
+        // Business logic exceptions - propagate to service layer
+        if (ex instanceof org.springframework.dao.DuplicateKeyException) {
+            logger.debug("Duplicate key constraint violation: {}", ex.getMessage());
+            return ex;
+        }
+        if (ex instanceof org.springframework.dao.DataIntegrityViolationException) {
+            logger.debug("Data integrity violation: {}", ex.getMessage());
+            return ex;
+        }
+        // Technical exceptions - convert to infrastructure errors
+        logger.error("Technical database error", ex);
+        return new InternalServerErrorException("Failed to save Rental", ex);
+    }
+
+    @Override
+    public Mono<Rental> findById(String id) {
+        logger.debug("Finding Rental by id: {}", id);
+        return r2dbcRepository.findById(UUID.fromString(id))
+                .map(mapper::toDomain)
+                .doOnError(e -> logger.error("Database error while finding Rental by id", e, id))
+                .onErrorMap(e -> new InternalServerErrorException("Failed to find Rental by id", e));
+    }
+
+    @Override
+    public Flux<Rental> findAll() {
+        logger.debug("Finding all Rentals");
+        return r2dbcRepository.findAll()
+                .map(mapper::toDomain)
+                .doOnError(e -> logger.error("Database error while finding all Rentals", e))
+                .onErrorMap(e -> new InternalServerErrorException("Failed to find all Rentals", e));
+    }
+
+    @Override
+    public Mono<Void> deleteById(String id) {
+        logger.debug("Deleting Rental by id: {}", id);
+        return r2dbcRepository.deleteById(UUID.fromString(id))
+                .doOnError(e -> logger.error("Database error while deleting Rental by id", e, id))
+                .onErrorMap(e -> new InternalServerErrorException("Failed to delete Rental by id", e));
+    }
+
+    @Override
+    public Mono<Boolean> existsById(String id) {
+        logger.debug("Checking if Rental exists by id: {}", id);
+        return r2dbcRepository.existsById(UUID.fromString(id))
+                .doOnError(e -> logger.error("Database error while checking if Rental exists by id", e, id))
+                .onErrorMap(e -> new InternalServerErrorException("Failed to check if Rental exists by id", e));
+    }
+
+    @Override
+    public Flux<Rental> findBySearchTerm(String search, Integer page, Integer size) {
+        logger.debug("Searching Rentals with term: {}, page: {}, size: {}", search, page, size);
+        
+        long limit = size != null && size > 0 ? size : 20L;
+        long offset = page != null && page > 0 ? (page - 1) * limit : 0L;
+        
+        return r2dbcRepository.findBySearchTerm(search, limit, offset)
+                .map(mapper::toDomain)
+                .doOnError(e -> logger.error("Database error while searching Rentals", e, search))
+                .onErrorMap(this::mapRepositoryException);
+    }
+    
+    @Override
+    public Flux<Rental> findByFilters(String search, String status, String dateFrom, String dateTo, Integer page, Integer size) {
+        logger.debug("Searching Rentals with filters - search: {}, status: {}, dateFrom: {}, dateTo: {}, page: {}, size: {}", 
+                    search, status, dateFrom, dateTo, page, size);
+        
+        long limit = size != null && size > 0 ? size : 20L;
+        long offset = page != null && page > 0 ? (page - 1) * limit : 0L;
+        
+        return r2dbcRepository.findByFilters(search, status, dateFrom, dateTo, limit, offset)
+                .map(mapper::toDomain)
+                .doOnError(e -> logger.error("Database error while searching Rentals with filters", e))
+                .onErrorMap(this::mapRepositoryException);
+    }
+    
+    // Additional business methods for reactive operations
+    public Mono<Long> countBySearchTerm(String search) {
+        logger.debug("Counting Rentals with search term: {}", search);
+        return r2dbcRepository.countBySearchTerm(search)
+                .doOnError(e -> logger.error("Database error while counting Rentals", e, search))
+                .onErrorMap(e -> new InternalServerErrorException("Failed to count Rentals", e));
+    }
+    
+    @Override
+    public Flux<Rental> findAllPaged(Integer page, Integer size) {
+        logger.debug("Finding all Rentals with pagination: page={}, size={}", page, size);
+        
+        long limit = size != null && size > 0 ? size : 20L;
+        long offset = page != null && page > 0 ? (page - 1) * limit : 0L;
+        
+        return r2dbcRepository.findAllPaged(limit, offset)
+                .map(mapper::toDomain)
+                .doOnError(e -> logger.error("Database error while finding all Rentals paged", e))
+                .onErrorMap(this::mapRepositoryException);
+    }
+    
+    public Mono<Long> countAll() {
+        logger.debug("Counting all Rentals");
+        return r2dbcRepository.countAll()
+                .doOnError(e -> logger.error("Database error while counting all Rentals", e))
+                .onErrorMap(e -> new InternalServerErrorException("Failed to count all Rentals", e));
+    }
+}
