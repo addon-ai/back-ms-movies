@@ -51,7 +51,10 @@ class BackstageFilesGenerator:
             'stack_type': stack_type,
             'default_owner': 'platform-team',
             'default_groupId': project_info['params']['groupId'],
+            'default_artifactId': project_info['params']['artifactId'],
             'default_javaVersion': project_config.get('devops', {}).get('ci', {}).get('javaVersion', '21'),
+            'default_springBootVersion': project_info['dependencies'].get('springBoot', '3.2.5'),
+            'default_coverageThreshold': project_config.get('devops', {}).get('ci', {}).get('coverageThreshold', '85'),
             'github_org': github_org
         }
         
