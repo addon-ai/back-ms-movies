@@ -1,5 +1,0 @@
-spring:
-  application:
-    name: back-ms-movies
-  profiles:
-    active: local
