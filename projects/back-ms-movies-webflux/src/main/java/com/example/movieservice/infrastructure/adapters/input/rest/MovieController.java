@@ -1,12 +1,14 @@
-package {{packageName}};
+package com.example.movieservice.infrastructure.adapters.input.rest;
 
-{{#useCaseImports}}
-import {{.}};
-{{/useCaseImports}}
-{{#dtoImports}}
-import {{.}};
-{{/dtoImports}}
-import {{utils}}.LoggingUtils;
+import com.example.movieservice.domain.ports.input.MovieUseCase;
+import com.example.movieservice.application.dto.movie.CreateMovieRequestContent;
+import com.example.movieservice.application.dto.movie.CreateMovieResponseContent;
+import com.example.movieservice.application.dto.movie.GetMovieResponseContent;
+import com.example.movieservice.application.dto.movie.UpdateMovieRequestContent;
+import com.example.movieservice.application.dto.movie.UpdateMovieResponseContent;
+import com.example.movieservice.application.dto.movie.DeleteMovieResponseContent;
+import com.example.movieservice.application.dto.movie.ListMoviesResponseContent;
+import com.example.movieservice.utils.LoggingUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,7 +32,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
- * Reactive REST Controller for {{entityName}} operations.
+ * Reactive REST Controller for Movie operations.
  * <p>
  * This controller serves as the input adapter in the Clean Architecture,
  * handling HTTP requests reactively and delegating business logic to use cases.
@@ -38,31 +40,30 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * using Spring WebFlux and Project Reactor.
  * </p>
  * 
- * @author {{author}}
- * @version {{version}}
+ * @author Jiliar Silgado <jiliar.silgado@gmail.com>
+ * @version 1.0.0
  */
 @RestController
-@RequestMapping("/{{entityPath}}")
+@RequestMapping("/movies")
 @RequiredArgsConstructor
-@Tag(name = "{{entityName}}", description = "{{entityName}} management operations")
-public class {{classname}} {
+@Tag(name = "Movie", description = "Movie management operations")
+public class MovieController {
 
-    private static final LoggingUtils logger = LoggingUtils.getLogger({{classname}}.class);
+    private static final LoggingUtils logger = LoggingUtils.getLogger(MovieController.class);
 
-    private final {{entityName}}UseCase {{entityVarName}}UseCase;
+    private final MovieUseCase movieUseCase;
 
-{{#hasCreate}}
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Create a new {{entityName}}", description = "Creates a new {{entityName}} with the provided information")
+    @Operation(summary = "Create a new Movie", description = "Creates a new Movie with the provided information")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "{{entityName}} created successfully"),
+        @ApiResponse(responseCode = "201", description = "Movie created successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid input data"),
-        @ApiResponse(responseCode = "409", description = "{{entityName}} already exists")
+        @ApiResponse(responseCode = "409", description = "Movie already exists")
     })
-    public Mono<Create{{entityName}}ResponseContent> create{{entityName}}(
-            @Parameter(description = "{{entityName}} creation request", required = true)
-            @Valid @RequestBody Create{{entityName}}RequestContent request,
+    public Mono<CreateMovieResponseContent> createMovie(
+            @Parameter(description = "Movie creation request", required = true)
+            @Valid @RequestBody CreateMovieRequestContent request,
             @Parameter(description = "Unique request identifier", required = true)
             @RequestHeader("X-Request-ID") String requestId,
             @Parameter(description = "Correlation identifier for transaction tracking")
@@ -71,24 +72,22 @@ public class {{classname}} {
             @RequestHeader(value = "X-Client-Id", required = false) String clientId) {
         return Mono.fromRunnable(() -> LoggingUtils.setRequestContext(requestId, correlationId, clientId))
                 .then(Mono.fromCallable(() -> {
-                    logger.info("Creating {{entityVarName}} with request: {}", request);
+                    logger.info("Creating movie with request: {}", request);
                     return request;
                 }))
-                .flatMap({{entityVarName}}UseCase::create)
+                .flatMap(movieUseCase::create)
                 .doFinally(signal -> LoggingUtils.clearRequestContext());
     }
-{{/hasCreate}}
 
-{{#hasGet}}
-    @GetMapping("/{{entityIdPath}}")
-    @Operation(summary = "Get {{entityName}} by ID", description = "Retrieves a {{entityName}} by its unique identifier")
+    @GetMapping("/{movieId}")
+    @Operation(summary = "Get Movie by ID", description = "Retrieves a Movie by its unique identifier")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "{{entityName}} found"),
-        @ApiResponse(responseCode = "404", description = "{{entityName}} not found")
+        @ApiResponse(responseCode = "200", description = "Movie found"),
+        @ApiResponse(responseCode = "404", description = "Movie not found")
     })
-    public Mono<Get{{entityName}}ResponseContent> get{{entityName}}(
-            @Parameter(description = "{{entityName}} unique identifier", required = true)
-            @PathVariable String {{entityVarName}}Id,
+    public Mono<GetMovieResponseContent> getMovie(
+            @Parameter(description = "Movie unique identifier", required = true)
+            @PathVariable String movieId,
             @Parameter(description = "Unique request identifier", required = true)
             @RequestHeader("X-Request-ID") String requestId,
             @Parameter(description = "Correlation identifier for transaction tracking")
@@ -97,27 +96,25 @@ public class {{classname}} {
             @RequestHeader(value = "X-Client-Id", required = false) String clientId) {
         return Mono.fromRunnable(() -> LoggingUtils.setRequestContext(requestId, correlationId, clientId))
                 .then(Mono.fromCallable(() -> {
-                    logger.info("Getting {{entityVarName}} with id: {}", {{entityVarName}}Id);
-                    return {{entityVarName}}Id;
+                    logger.info("Getting movie with id: {}", movieId);
+                    return movieId;
                 }))
-                .flatMap({{entityVarName}}UseCase::get)
+                .flatMap(movieUseCase::get)
                 .doFinally(signal -> LoggingUtils.clearRequestContext());
     }
-{{/hasGet}}
 
-{{#hasUpdate}}
-    @PutMapping("/{{entityIdPath}}")
-    @Operation(summary = "Update {{entityName}}", description = "Updates an existing {{entityName}} with new information")
+    @PutMapping("/{movieId}")
+    @Operation(summary = "Update Movie", description = "Updates an existing Movie with new information")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "{{entityName}} updated successfully"),
+        @ApiResponse(responseCode = "200", description = "Movie updated successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid input data"),
-        @ApiResponse(responseCode = "404", description = "{{entityName}} not found")
+        @ApiResponse(responseCode = "404", description = "Movie not found")
     })
-    public Mono<Update{{entityName}}ResponseContent> update{{entityName}}(
-            @Parameter(description = "{{entityName}} unique identifier", required = true)
-            @PathVariable String {{entityVarName}}Id,
-            @Parameter(description = "{{entityName}} update request", required = true)
-            @Valid @RequestBody Update{{entityName}}RequestContent request,
+    public Mono<UpdateMovieResponseContent> updateMovie(
+            @Parameter(description = "Movie unique identifier", required = true)
+            @PathVariable String movieId,
+            @Parameter(description = "Movie update request", required = true)
+            @Valid @RequestBody UpdateMovieRequestContent request,
             @Parameter(description = "Unique request identifier", required = true)
             @RequestHeader("X-Request-ID") String requestId,
             @Parameter(description = "Correlation identifier for transaction tracking")
@@ -126,24 +123,22 @@ public class {{classname}} {
             @RequestHeader(value = "X-Client-Id", required = false) String clientId) {
         return Mono.fromRunnable(() -> LoggingUtils.setRequestContext(requestId, correlationId, clientId))
                 .then(Mono.fromCallable(() -> {
-                    logger.info("Updating {{entityVarName}} {} with request: {}", {{entityVarName}}Id, request);
+                    logger.info("Updating movie {} with request: {}", movieId, request);
                     return request;
                 }))
-                .flatMap(req -> {{entityVarName}}UseCase.update({{entityVarName}}Id, req))
+                .flatMap(req -> movieUseCase.update(movieId, req))
                 .doFinally(signal -> LoggingUtils.clearRequestContext());
     }
-{{/hasUpdate}}
 
-{{#hasDelete}}
-    @DeleteMapping("/{{entityIdPath}}")
-    @Operation(summary = "Delete {{entityName}}", description = "Soft deletes a {{entityName}} by setting status to INACTIVE")
+    @DeleteMapping("/{movieId}")
+    @Operation(summary = "Delete Movie", description = "Soft deletes a Movie by setting status to INACTIVE")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "{{entityName}} deleted successfully (status set to INACTIVE)"),
-        @ApiResponse(responseCode = "404", description = "{{entityName}} not found")
+        @ApiResponse(responseCode = "200", description = "Movie deleted successfully (status set to INACTIVE)"),
+        @ApiResponse(responseCode = "404", description = "Movie not found")
     })
-    public Mono<Delete{{entityName}}ResponseContent> delete{{entityName}}(
-            @Parameter(description = "{{entityName}} unique identifier", required = true)
-            @PathVariable String {{entityVarName}}Id,
+    public Mono<DeleteMovieResponseContent> deleteMovie(
+            @Parameter(description = "Movie unique identifier", required = true)
+            @PathVariable String movieId,
             @Parameter(description = "Unique request identifier", required = true)
             @RequestHeader("X-Request-ID") String requestId,
             @Parameter(description = "Correlation identifier for transaction tracking")
@@ -152,29 +147,27 @@ public class {{classname}} {
             @RequestHeader(value = "X-Client-Id", required = false) String clientId) {
         return Mono.fromRunnable(() -> LoggingUtils.setRequestContext(requestId, correlationId, clientId))
                 .then(Mono.fromCallable(() -> {
-                    logger.info("Deleting {{entityVarName}} with id: {}", {{entityVarName}}Id);
-                    return {{entityVarName}}Id;
+                    logger.info("Deleting movie with id: {}", movieId);
+                    return movieId;
                 }))
-                .flatMap({{entityVarName}}UseCase::delete)
+                .flatMap(movieUseCase::delete)
                 .doFinally(signal -> LoggingUtils.clearRequestContext());
     }
-{{/hasDelete}}
 
-{{#hasList}}
     @GetMapping
-    @Operation(summary = "List {{entityName}}s", description = "Retrieves a paginated list of {{entityName}}s with optional search, status filter and date range")
+    @Operation(summary = "List Movies", description = "Retrieves a paginated list of Movies with optional search, status filter and date range")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "{{entityName}}s retrieved successfully"),
+        @ApiResponse(responseCode = "200", description = "Movies retrieved successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid date range or format")
     })
-    public Mono<List{{entityName}}sResponseContent> list{{entityName}}s(
+    public Mono<ListMoviesResponseContent> listMovies(
             @Parameter(description = "Page number (1-based)", example = "1")
             @RequestParam(defaultValue = "1") Integer page,
             @Parameter(description = "Page size", example = "20")
             @RequestParam(defaultValue = "20") Integer size,
             @Parameter(description = "Search term for filtering")
             @RequestParam(required = false) String search,
-            @Parameter(description = "{{entityName}} status filter (ACTIVE, INACTIVE, PENDING, SUSPENDED, DELETED). Default: ACTIVE")
+            @Parameter(description = "Movie status filter (ACTIVE, INACTIVE, PENDING, SUSPENDED, DELETED). Default: ACTIVE")
             @RequestParam(required = false) String status,
             @Parameter(description = "Start date for filtering by createdAt (ISO format: 2024-01-01T00:00:00Z)")
             @RequestParam(required = false) String dateFrom,
@@ -201,44 +194,12 @@ public class {{classname}} {
                         }
                     }
                     
-                    logger.info("Listing {{entityVarName}}s with page: {}, size: {}, search: {}, status: {}, dateFrom: {}, dateTo: {}", 
+                    logger.info("Listing movies with page: {}, size: {}, search: {}, status: {}, dateFrom: {}, dateTo: {}", 
                                page, size, search, status, dateFrom, dateTo);
                     return search == null ? "": search;
                 }))
-                .flatMap(searchTerm -> {{entityVarName}}UseCase.list(page, size, searchTerm, status, dateFrom, dateTo))
-                .doFinally(signal -> LoggingUtils.clearRequestContext());
-    }
-{{/hasList}}
-
-{{#hasComplexOperations}}
-{{#complexOperations}}
-    @GetMapping("/{{pathSegment}}")
-    @Operation(summary = "{{operationId}}", description = "Complex operation: {{operationId}}")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Operation completed successfully")
-    })
-    public Mono<{{responseType}}> {{methodName}}(
-            {{#hasPathVariables}}
-            {{#pathVariables}}
-            @Parameter(description = "{{name}} identifier", required = true)
-            @PathVariable {{type}} {{name}},
-            {{/pathVariables}}
-            {{/hasPathVariables}}
-            @Parameter(description = "Unique request identifier", required = true)
-            @RequestHeader("X-Request-ID") String requestId,
-            @Parameter(description = "Correlation identifier for transaction tracking")
-            @RequestHeader(value = "X-Correlation-ID", required = false) String correlationId,
-            @Parameter(description = "Client service identifier")
-            @RequestHeader(value = "X-Client-Id", required = false) String clientId) {
-        return Mono.fromRunnable(() -> LoggingUtils.setRequestContext(requestId, correlationId, clientId))
-                .then(Mono.fromCallable(() -> {
-                    logger.info("Executing {{operationId}}{{#hasPathVariables}} with {{#pathVariables}}{{name}}: {}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}}", {{#hasPathVariables}}{{#pathVariables}}{{name}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}});
-                    return "{{operationId}}";
-                }))
-                .flatMap(op -> {{entityVarName}}UseCase.{{methodName}}({{#hasPathVariables}}{{#pathVariables}}{{name}}{{#hasMore}}, {{/hasMore}}{{/pathVariables}}{{/hasPathVariables}}))
+                .flatMap(searchTerm -> movieUseCase.list(page, size, searchTerm, status, dateFrom, dateTo))
                 .doFinally(signal -> LoggingUtils.clearRequestContext());
     }
 
-{{/complexOperations}}
-{{/hasComplexOperations}}
 }

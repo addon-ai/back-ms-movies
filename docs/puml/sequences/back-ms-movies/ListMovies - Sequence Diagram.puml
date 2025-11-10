@@ -1,0 +1,53 @@
+@startuml List Movies
+!theme plain
+title List Movies - Hexagonal Architecture Flow
+
+actor Client
+participant "MovieController\n(Input Adapter)" as Controller
+participant "MovieUseCase\n(Domain Port)" as UseCase
+participant "MovieMapper\n(Application Layer)" as Mapper
+participant "MovieRepositoryPort\n(Domain Port)" as RepoPort
+participant "MovieRepositoryAdapter\n(Output Adapter)" as RepoAdapter
+participant "JpaMovieRepository\n(Infrastructure)" as JpaRepo
+database "Database" as DB
+
+Client -> Controller: GET /movies
+activate Controller
+
+Controller -> UseCase: list()
+activate UseCase
+note right: UseCase is implemented by MovieService
+
+UseCase -> RepoPort: findAll()
+activate RepoPort
+RepoPort -> RepoAdapter: findAll()
+activate RepoAdapter
+RepoAdapter -> JpaRepo: findAll()
+activate JpaRepo
+JpaRepo -> DB: SELECT * FROM movies
+DB --> JpaRepo: List<MovieDbo>
+JpaRepo --> RepoAdapter: List<MovieDbo>
+deactivate JpaRepo
+
+RepoAdapter -> Mapper: toDomainList(List<MovieDbo>)
+activate Mapper
+Mapper --> RepoAdapter: List<Movie>
+deactivate Mapper
+
+RepoAdapter --> RepoPort: List<Movie>
+deactivate RepoAdapter
+RepoPort --> UseCase: List<Movie>
+deactivate RepoPort
+
+UseCase -> Mapper: toListResponse(List<Movie>)
+activate Mapper
+Mapper --> UseCase: ListMovieResponseContent
+deactivate Mapper
+
+UseCase --> Controller: ListMovieResponseContent
+deactivate UseCase
+
+Controller --> Client: HTTP 200
+deactivate Controller
+
+@enduml

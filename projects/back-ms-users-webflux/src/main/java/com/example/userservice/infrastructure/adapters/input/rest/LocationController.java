@@ -14,7 +14,6 @@ import com.example.userservice.application.dto.location.GetCitiesByRegionRespons
 import com.example.userservice.utils.LoggingUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +24,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import jakarta.validation.Valid;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -33,11 +35,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
- * REST Controller for Location operations.
+ * Reactive REST Controller for Location operations.
  * <p>
  * This controller serves as the input adapter in the Clean Architecture,
- * handling HTTP requests and delegating business logic to use cases.
- * It follows REST conventions and provides endpoints for CRUD operations.
+ * handling HTTP requests reactively and delegating business logic to use cases.
+ * It follows REST conventions and provides reactive endpoints for CRUD operations
+ * using Spring WebFlux and Project Reactor.
  * </p>
  * 
  * @author Jiliar Silgado <jiliar.silgado@gmail.com>
@@ -54,13 +57,14 @@ public class LocationController {
     private final LocationUseCase locationUseCase;
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create a new Location", description = "Creates a new Location with the provided information")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Location created successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid input data"),
         @ApiResponse(responseCode = "409", description = "Location already exists")
     })
-    public ResponseEntity<CreateLocationResponseContent> createLocation(
+    public Mono<CreateLocationResponseContent> createLocation(
             @Parameter(description = "Location creation request", required = true)
             @Valid @RequestBody CreateLocationRequestContent request,
             @Parameter(description = "Unique request identifier", required = true)
@@ -69,14 +73,13 @@ public class LocationController {
             @RequestHeader(value = "X-Correlation-ID", required = false) String correlationId,
             @Parameter(description = "Client service identifier")
             @RequestHeader(value = "X-Client-Id", required = false) String clientId) {
-        LoggingUtils.setRequestContext(requestId, correlationId, clientId);
-        try {
-            logger.info("Creating location with request: {}", request);
-            CreateLocationResponseContent response = locationUseCase.create(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } finally {
-            LoggingUtils.clearRequestContext();
-        }
+        return Mono.fromRunnable(() -> LoggingUtils.setRequestContext(requestId, correlationId, clientId))
+                .then(Mono.fromCallable(() -> {
+                    logger.info("Creating location with request: {}", request);
+                    return request;
+                }))
+                .flatMap(locationUseCase::create)
+                .doFinally(signal -> LoggingUtils.clearRequestContext());
     }
 
     @GetMapping("/{locationId}")
@@ -85,7 +88,7 @@ public class LocationController {
         @ApiResponse(responseCode = "200", description = "Location found"),
         @ApiResponse(responseCode = "404", description = "Location not found")
     })
-    public ResponseEntity<GetLocationResponseContent> getLocation(
+    public Mono<GetLocationResponseContent> getLocation(
             @Parameter(description = "Location unique identifier", required = true)
             @PathVariable String locationId,
             @Parameter(description = "Unique request identifier", required = true)
@@ -94,14 +97,13 @@ public class LocationController {
             @RequestHeader(value = "X-Correlation-ID", required = false) String correlationId,
             @Parameter(description = "Client service identifier")
             @RequestHeader(value = "X-Client-Id", required = false) String clientId) {
-        LoggingUtils.setRequestContext(requestId, correlationId, clientId);
-        try {
-            logger.info("Getting location with id: {}", locationId);
-            GetLocationResponseContent response = locationUseCase.get(locationId);
-            return ResponseEntity.ok(response);
-        } finally {
-            LoggingUtils.clearRequestContext();
-        }
+        return Mono.fromRunnable(() -> LoggingUtils.setRequestContext(requestId, correlationId, clientId))
+                .then(Mono.fromCallable(() -> {
+                    logger.info("Getting location with id: {}", locationId);
+                    return locationId;
+                }))
+                .flatMap(locationUseCase::get)
+                .doFinally(signal -> LoggingUtils.clearRequestContext());
     }
 
     @PutMapping("/{locationId}")
@@ -111,7 +113,7 @@ public class LocationController {
         @ApiResponse(responseCode = "400", description = "Invalid input data"),
         @ApiResponse(responseCode = "404", description = "Location not found")
     })
-    public ResponseEntity<UpdateLocationResponseContent> updateLocation(
+    public Mono<UpdateLocationResponseContent> updateLocation(
             @Parameter(description = "Location unique identifier", required = true)
             @PathVariable String locationId,
             @Parameter(description = "Location update request", required = true)
@@ -122,14 +124,13 @@ public class LocationController {
             @RequestHeader(value = "X-Correlation-ID", required = false) String correlationId,
             @Parameter(description = "Client service identifier")
             @RequestHeader(value = "X-Client-Id", required = false) String clientId) {
-        LoggingUtils.setRequestContext(requestId, correlationId, clientId);
-        try {
-            logger.info("Updating location {} with request: {}", locationId, request);
-            UpdateLocationResponseContent response = locationUseCase.update(locationId, request);
-            return ResponseEntity.ok(response);
-        } finally {
-            LoggingUtils.clearRequestContext();
-        }
+        return Mono.fromRunnable(() -> LoggingUtils.setRequestContext(requestId, correlationId, clientId))
+                .then(Mono.fromCallable(() -> {
+                    logger.info("Updating location {} with request: {}", locationId, request);
+                    return request;
+                }))
+                .flatMap(req -> locationUseCase.update(locationId, req))
+                .doFinally(signal -> LoggingUtils.clearRequestContext());
     }
 
     @DeleteMapping("/{locationId}")
@@ -138,7 +139,7 @@ public class LocationController {
         @ApiResponse(responseCode = "200", description = "Location deleted successfully (status set to INACTIVE)"),
         @ApiResponse(responseCode = "404", description = "Location not found")
     })
-    public ResponseEntity<DeleteLocationResponseContent> deleteLocation(
+    public Mono<DeleteLocationResponseContent> deleteLocation(
             @Parameter(description = "Location unique identifier", required = true)
             @PathVariable String locationId,
             @Parameter(description = "Unique request identifier", required = true)
@@ -147,14 +148,13 @@ public class LocationController {
             @RequestHeader(value = "X-Correlation-ID", required = false) String correlationId,
             @Parameter(description = "Client service identifier")
             @RequestHeader(value = "X-Client-Id", required = false) String clientId) {
-        LoggingUtils.setRequestContext(requestId, correlationId, clientId);
-        try {
-            logger.info("Deleting location with id: {}", locationId);
-            DeleteLocationResponseContent response = locationUseCase.delete(locationId);
-            return ResponseEntity.ok(response);
-        } finally {
-            LoggingUtils.clearRequestContext();
-        }
+        return Mono.fromRunnable(() -> LoggingUtils.setRequestContext(requestId, correlationId, clientId))
+                .then(Mono.fromCallable(() -> {
+                    logger.info("Deleting location with id: {}", locationId);
+                    return locationId;
+                }))
+                .flatMap(locationUseCase::delete)
+                .doFinally(signal -> LoggingUtils.clearRequestContext());
     }
 
     @GetMapping
@@ -163,7 +163,7 @@ public class LocationController {
         @ApiResponse(responseCode = "200", description = "Locations retrieved successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid date range or format")
     })
-    public ResponseEntity<ListLocationsResponseContent> listLocations(
+    public Mono<ListLocationsResponseContent> listLocations(
             @Parameter(description = "Page number (1-based)", example = "1")
             @RequestParam(defaultValue = "1") Integer page,
             @Parameter(description = "Page size", example = "20")
@@ -182,28 +182,27 @@ public class LocationController {
             @RequestHeader(value = "X-Correlation-ID", required = false) String correlationId,
             @Parameter(description = "Client service identifier")
             @RequestHeader(value = "X-Client-Id", required = false) String clientId) {
-        LoggingUtils.setRequestContext(requestId, correlationId, clientId);
-        try {
-            // Validate date range
-            if (dateFrom != null && dateTo != null && !dateFrom.trim().isEmpty() && !dateTo.trim().isEmpty()) {
-                try {
-                    java.time.Instant fromInstant = java.time.Instant.parse(dateFrom);
-                    java.time.Instant toInstant = java.time.Instant.parse(dateTo);
-                    if (fromInstant.isAfter(toInstant)) {
-                        throw new IllegalArgumentException("dateFrom cannot be after dateTo");
+        return Mono.fromRunnable(() -> LoggingUtils.setRequestContext(requestId, correlationId, clientId))
+                .then(Mono.fromCallable(() -> {
+                    // Validate date range
+                    if (dateFrom != null && dateTo != null && !dateFrom.trim().isEmpty() && !dateTo.trim().isEmpty()) {
+                        try {
+                            java.time.Instant fromInstant = java.time.Instant.parse(dateFrom);
+                            java.time.Instant toInstant = java.time.Instant.parse(dateTo);
+                            if (fromInstant.isAfter(toInstant)) {
+                                throw new IllegalArgumentException("dateFrom cannot be after dateTo");
+                            }
+                        } catch (java.time.format.DateTimeParseException e) {
+                            throw new IllegalArgumentException("Invalid date format. Use ISO format: 2024-01-01T00:00:00Z");
+                        }
                     }
-                } catch (java.time.format.DateTimeParseException e) {
-                    throw new IllegalArgumentException("Invalid date format. Use ISO format: 2024-01-01T00:00:00Z");
-                }
-            }
-            
-            logger.info("Listing locations with page: {}, size: {}, search: {}, status: {}, dateFrom: {}, dateTo: {}", 
-                       page, size, search, status, dateFrom, dateTo);
-            ListLocationsResponseContent response = locationUseCase.list(page, size, search, status, dateFrom, dateTo);
-            return ResponseEntity.ok(response);
-        } finally {
-            LoggingUtils.clearRequestContext();
-        }
+                    
+                    logger.info("Listing locations with page: {}, size: {}, search: {}, status: {}, dateFrom: {}, dateTo: {}", 
+                               page, size, search, status, dateFrom, dateTo);
+                    return search == null ? "": search;
+                }))
+                .flatMap(searchTerm -> locationUseCase.list(page, size, searchTerm, status, dateFrom, dateTo))
+                .doFinally(signal -> LoggingUtils.clearRequestContext());
     }
 
     @GetMapping("/cities/{cityId}/neighborhoods")
@@ -211,7 +210,7 @@ public class LocationController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Operation completed successfully")
     })
-    public ResponseEntity<GetNeighborhoodsByCityResponseContent> getNeighborhoodsByCity(
+    public Mono<GetNeighborhoodsByCityResponseContent> getNeighborhoodsByCity(
             @Parameter(description = "cityId identifier", required = true)
             @PathVariable String cityId,
             @Parameter(description = "Unique request identifier", required = true)
@@ -220,14 +219,13 @@ public class LocationController {
             @RequestHeader(value = "X-Correlation-ID", required = false) String correlationId,
             @Parameter(description = "Client service identifier")
             @RequestHeader(value = "X-Client-Id", required = false) String clientId) {
-        LoggingUtils.setRequestContext(requestId, correlationId, clientId);
-        try {
-            logger.info("Executing GetNeighborhoodsByCity with cityId: {}", cityId);
-            GetNeighborhoodsByCityResponseContent response = locationUseCase.getNeighborhoodsByCity(cityId);
-            return ResponseEntity.ok(response);
-        } finally {
-            LoggingUtils.clearRequestContext();
-        }
+        return Mono.fromRunnable(() -> LoggingUtils.setRequestContext(requestId, correlationId, clientId))
+                .then(Mono.fromCallable(() -> {
+                    logger.info("Executing GetNeighborhoodsByCity with cityId: {}", cityId);
+                    return "GetNeighborhoodsByCity";
+                }))
+                .flatMap(op -> locationUseCase.getNeighborhoodsByCity(cityId))
+                .doFinally(signal -> LoggingUtils.clearRequestContext());
     }
 
     @GetMapping("/countries/{countryId}/regions")
@@ -235,7 +233,7 @@ public class LocationController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Operation completed successfully")
     })
-    public ResponseEntity<GetRegionsByCountryResponseContent> getRegionsByCountry(
+    public Mono<GetRegionsByCountryResponseContent> getRegionsByCountry(
             @Parameter(description = "countryId identifier", required = true)
             @PathVariable String countryId,
             @Parameter(description = "Unique request identifier", required = true)
@@ -244,14 +242,13 @@ public class LocationController {
             @RequestHeader(value = "X-Correlation-ID", required = false) String correlationId,
             @Parameter(description = "Client service identifier")
             @RequestHeader(value = "X-Client-Id", required = false) String clientId) {
-        LoggingUtils.setRequestContext(requestId, correlationId, clientId);
-        try {
-            logger.info("Executing GetRegionsByCountry with countryId: {}", countryId);
-            GetRegionsByCountryResponseContent response = locationUseCase.getRegionsByCountry(countryId);
-            return ResponseEntity.ok(response);
-        } finally {
-            LoggingUtils.clearRequestContext();
-        }
+        return Mono.fromRunnable(() -> LoggingUtils.setRequestContext(requestId, correlationId, clientId))
+                .then(Mono.fromCallable(() -> {
+                    logger.info("Executing GetRegionsByCountry with countryId: {}", countryId);
+                    return "GetRegionsByCountry";
+                }))
+                .flatMap(op -> locationUseCase.getRegionsByCountry(countryId))
+                .doFinally(signal -> LoggingUtils.clearRequestContext());
     }
 
     @GetMapping("/regions/{regionId}/cities")
@@ -259,7 +256,7 @@ public class LocationController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Operation completed successfully")
     })
-    public ResponseEntity<GetCitiesByRegionResponseContent> getCitiesByRegion(
+    public Mono<GetCitiesByRegionResponseContent> getCitiesByRegion(
             @Parameter(description = "regionId identifier", required = true)
             @PathVariable String regionId,
             @Parameter(description = "Unique request identifier", required = true)
@@ -268,14 +265,13 @@ public class LocationController {
             @RequestHeader(value = "X-Correlation-ID", required = false) String correlationId,
             @Parameter(description = "Client service identifier")
             @RequestHeader(value = "X-Client-Id", required = false) String clientId) {
-        LoggingUtils.setRequestContext(requestId, correlationId, clientId);
-        try {
-            logger.info("Executing GetCitiesByRegion with regionId: {}", regionId);
-            GetCitiesByRegionResponseContent response = locationUseCase.getCitiesByRegion(regionId);
-            return ResponseEntity.ok(response);
-        } finally {
-            LoggingUtils.clearRequestContext();
-        }
+        return Mono.fromRunnable(() -> LoggingUtils.setRequestContext(requestId, correlationId, clientId))
+                .then(Mono.fromCallable(() -> {
+                    logger.info("Executing GetCitiesByRegion with regionId: {}", regionId);
+                    return "GetCitiesByRegion";
+                }))
+                .flatMap(op -> locationUseCase.getCitiesByRegion(regionId))
+                .doFinally(signal -> LoggingUtils.clearRequestContext());
     }
 
 }

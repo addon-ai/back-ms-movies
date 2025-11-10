@@ -210,6 +210,10 @@ class InfrastructureGenerator:
             # Default fallback
             path_segment = operation_id.lower().replace('get', '')
         
+        # Set hasMore flag for comma separation
+        for i, var in enumerate(path_variables):
+            var['hasMore'] = i < len(path_variables) - 1
+        
         return {
             'pathSegment': path_segment,
             'pathVariables': path_variables
