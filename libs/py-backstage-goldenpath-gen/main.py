@@ -184,6 +184,18 @@ class BackstageGoldenPathGenerator:
         
         with open(os.path.join(self.output_dir, "collection-components.yml"), 'w') as f:
             f.write(output)
+        
+        # Generate .gitignore in root
+        self._generate_root_gitignore()
+    
+    def _generate_root_gitignore(self):
+        """Generate .gitignore in backstage-templates root"""
+        template_path = os.path.join(self.templates_dir, "skeleton-gitignore.mustache")
+        with open(template_path, 'r') as f:
+            template = f.read()
+        
+        with open(os.path.join(self.output_dir, ".gitignore"), 'w') as f:
+            f.write(template)
     
     def _generate_root_mkdocs(self):
         """Generate root mkdocs.yml"""
