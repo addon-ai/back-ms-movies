@@ -1,0 +1,22 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: back-ms-movies-webflux
+  description: Reactive microservice for movie rental management with Spring WebFlux
+  tags:
+    - java
+    - spring-webflux
+    - hexagonal-architecture
+    - template
+  annotations:
+    github.com/project-slug: addon-ai/backstage-templates
+    backstage.io/techdocs-ref: dir:.
+    backstage.io/source-template: template:default/back-ms-movies-webflux
+    github.com/workflows: ci-cd.yml
+spec:
+  type: service
+  owner: platform-team
+  lifecycle: production
+  system: movies-system
+  providesApis:
+    - movie-reactive-api
