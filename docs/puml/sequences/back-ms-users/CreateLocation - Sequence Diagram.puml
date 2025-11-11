@@ -1,0 +1,65 @@
+@startuml Create Location
+!theme plain
+title Create Location - Hexagonal Architecture Flow
+
+actor Client
+participant "LocationController\n(Input Adapter)" as Controller
+participant "LocationUseCase\n(Domain Port)" as UseCase
+participant "LocationService\n(Application Service)" as Service
+participant "LocationMapper\n(Application Layer)" as Mapper
+participant "LocationRepositoryPort\n(Domain Port)" as RepoPort
+participant "LocationRepositoryAdapter\n(Output Adapter)" as RepoAdapter
+participant "JpaLocationRepository\n(Infrastructure)" as JpaRepo
+database "Database" as DB
+
+Client -> Controller: POST /locations
+activate Controller
+
+Controller -> UseCase: create(CreateLocationRequestContent)
+activate UseCase
+note right: UseCase is implemented by LocationService
+
+UseCase -> Mapper: fromCreateRequest(CreateLocationRequestContent)
+activate Mapper
+Mapper --> UseCase: Location (domain object)
+deactivate Mapper
+
+UseCase -> RepoPort: save(Location)
+activate RepoPort
+RepoPort -> RepoAdapter: save(Location)
+activate RepoAdapter
+
+RepoAdapter -> Mapper: toDbo(Location)
+activate Mapper
+Mapper --> RepoAdapter: LocationDbo
+deactivate Mapper
+
+RepoAdapter -> JpaRepo: save(LocationDbo)
+activate JpaRepo
+JpaRepo -> DB: INSERT INTO locations
+DB --> JpaRepo: LocationDbo
+JpaRepo --> RepoAdapter: LocationDbo
+deactivate JpaRepo
+
+RepoAdapter -> Mapper: toDomain(LocationDbo)
+activate Mapper
+Mapper --> RepoAdapter: Location
+deactivate Mapper
+
+RepoAdapter --> RepoPort: Location
+deactivate RepoAdapter
+RepoPort --> UseCase: Location
+deactivate RepoPort
+
+UseCase -> Mapper: toCreateResponse(Location)
+activate Mapper
+Mapper --> UseCase: CreateLocationResponseContent
+deactivate Mapper
+
+UseCase --> Controller: CreateLocationResponseContent
+deactivate UseCase
+
+Controller --> Client: HTTP 201
+deactivate Controller
+
+@enduml

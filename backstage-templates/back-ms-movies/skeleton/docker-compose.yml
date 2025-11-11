@@ -1,0 +1,94 @@
+# Docker Compose for Local Development Only
+# This file is designed for local development with hardcoded values
+# For other environments, use Kubernetes, Docker Swarm, or cloud services
+
+version: '3.8'
+
+services:
+  # postgresql Database for Local Development
+  postgresql:
+    image: postgres:15-alpine
+    container_name: back-ms-movies-postgresql-local
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: back_ms_movies_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5433:5433"
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+    networks:
+      - back_ms_movies_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d back_ms_movies_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Application Service (Local Profile)
+  back-ms-movies-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: back-ms-movies-app-local
+    restart: unless-stopped
+    environment:
+      # Force local profile for Docker Compose
+      SPRING_PROFILES_ACTIVE: local
+      
+      # Database connection variables
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5433/back_ms_movies_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password123
+
+      # Reduced logging level from DEBUG to INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_JDBC: INFO
+      LOGGING_LEVEL_ORG_FLYWAYDB: INFO
+
+      # JVM settings for development
+      JAVA_OPTS: "-Xmx512m -Xms256m -XX:+UseG1GC"
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    networks:
+      - back_ms_movies_network
+    volumes:
+      # Mount logs for debugging
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Database Management Tool (Optional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: back-ms-movies-pgadmin-local
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@back-ms-movies.local
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgresql
+    networks:
+      - back_ms_movies_network
+    profiles:
+      - tools
+
+volumes:
+  postgresql_data:
+    driver: local
+
+networks:
+  back_ms_movies_network:
+    driver: bridge
+    name: back_ms_movies_local_network
