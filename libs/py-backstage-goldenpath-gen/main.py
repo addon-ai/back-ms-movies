@@ -208,10 +208,18 @@ class BackstageGoldenPathGenerator:
     
     def _generate_entity_files(self, project_name, project_dir, openapi_files):
         """Generate individual entity files for each OpenAPI spec"""
+        is_webflux = '-webflux' in project_name
+        
         for openapi_file in openapi_files:
-            # Extract service name from filename (e.g., UserService.openapi.json -> user-service)
+            # Extract service name from filename (e.g., UserService.openapi.json -> user)
             service_name = openapi_file.replace('.openapi.json', '').replace('Service', '')
             service_name_kebab = ''.join(['-' + c.lower() if c.isupper() else c for c in service_name]).lstrip('-')
+            
+            # Build API name: service-reactive-api or service-api
+            if is_webflux:
+                api_name = f"{service_name_kebab}-reactive-api"
+            else:
+                api_name = f"{service_name_kebab}-api"
             
             # Read OpenAPI file to get description
             openapi_path = os.path.join(project_dir, 'openapi', openapi_file)
@@ -228,7 +236,7 @@ class BackstageGoldenPathGenerator:
             entity_content = f"""apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:
-  name: {service_name_kebab}-api
+  name: {api_name}
   description: {description}
 spec:
   type: openapi

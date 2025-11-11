@@ -1,7 +1,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:
-  name: movie-api
+  name: movie-reactive-api
   description: A comprehensive service for managing movie rentals with catalog and transaction processing. This service provides movie catalog management (CRUD operations), rental transaction processing, inventory tracking and availability management, late fee calculation and payment processing, and user rental history and status tracking.
 spec:
   type: openapi
