@@ -107,10 +107,14 @@ class BackstageGoldenPathGenerator:
         
         stack_type = config['project']['general'].get('type', 'springBoot')
         stack_type_kebab = 'spring-webflux' if 'webflux' in stack_type.lower() else 'spring-boot'
+        is_webflux = '-webflux' in project_name
         
-        # Extract system name from project name
+        # Extract system name and API names from project name
         base_name = project_name.replace('-webflux', '').replace('back-ms-', '')
         system_name = f"{base_name}-system"
+        
+        # Get API names from entities directory
+        provides_apis = self._get_provides_apis(project_name, project_dir, is_webflux)
         
         data = {
             'template_id': project_name,
@@ -118,13 +122,30 @@ class BackstageGoldenPathGenerator:
             'stack_type_kebab': stack_type_kebab,
             'github_org': config['devops']['github']['organization'],
             'default_owner': 'platform-team',
-            'system_name': system_name
+            'system_name': system_name,
+            'provides_apis': provides_apis
         }
         
         output = pystache.render(template, data)
         
         with open(os.path.join(project_dir, "catalog-info.yml"), 'w') as f:
             f.write(output)
+    
+    def _get_provides_apis(self, project_name, project_dir, is_webflux):
+        """Get list of API names that this component provides"""
+        entities_dir = os.path.join(project_dir, 'entities')
+        apis = []
+        
+        if os.path.exists(entities_dir):
+            for file in os.listdir(entities_dir):
+                if file.endswith('-entity.yml'):
+                    service_name = file.replace('-entity.yml', '')
+                    if is_webflux:
+                        apis.append(f"{service_name}-reactive-api")
+                    else:
+                        apis.append(f"{service_name}-api")
+        
+        return apis
     
     def _generate_skeleton_catalog(self, project_name, config, skeleton_dir):
         """Generate skeleton/catalog-info.yaml"""

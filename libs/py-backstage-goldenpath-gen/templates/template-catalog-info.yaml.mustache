@@ -18,3 +18,5 @@ spec:
   owner: {{default_owner}}
   lifecycle: production
   system: {{system_name}}
+  providesApis:{{#provides_apis}}
+    - {{.}}{{/provides_apis}}
