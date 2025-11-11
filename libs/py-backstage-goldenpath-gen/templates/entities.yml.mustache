@@ -1,0 +1,20 @@
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: {{project_name}}-system
+  description: {{project_description}}
+spec:
+  owner: platform-team
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: {{project_name}}-api
+  description: API REST para {{project_description}}
+spec:
+  type: openapi
+  lifecycle: production
+  owner: platform-team
+  system: {{project_name}}-system
+  definition:
+    $text: ./openapi.yaml

@@ -1,0 +1,20 @@
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: back-ms-users-system
+  description: Microservice for users management
+spec:
+  owner: platform-team
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: back-ms-users-api
+  description: API REST para Microservice for users management
+spec:
+  type: openapi
+  lifecycle: production
+  owner: platform-team
+  system: back-ms-users-system
+  definition:
+    $text: ./openapi.yaml

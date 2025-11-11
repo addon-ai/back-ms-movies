@@ -1,0 +1,20 @@
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: back-ms-movies-webflux-system
+  description: Reactive microservice for movie rental management with Spring WebFlux
+spec:
+  owner: platform-team
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: back-ms-movies-webflux-api
+  description: API REST para Reactive microservice for movie rental management with Spring WebFlux
+spec:
+  type: openapi
+  lifecycle: production
+  owner: platform-team
+  system: back-ms-movies-webflux-system
+  definition:
+    $text: ./openapi.yaml

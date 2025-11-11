@@ -53,6 +53,9 @@ class BackstageGoldenPathGenerator:
         # Generate docs/index.md
         self._generate_docs_index(project_name, docs_dir)
         
+        # Generate entities.yml
+        self._generate_entities_yml(project_name, config, project_dir)
+        
         # Generate skeleton/catalog-info.yaml (for generated projects)
         self._generate_skeleton_catalog(project_name, config, skeleton_dir)
     
@@ -172,6 +175,22 @@ class BackstageGoldenPathGenerator:
             with open(os.path.join(docs_dir, "index.md"), 'w') as f:
                 f.write(f"# {project_name}\n\nDocumentation coming soon...\n")
     
+    def _generate_entities_yml(self, project_name, config, project_dir):
+        """Generate entities.yml for each project"""
+        template_path = os.path.join(self.templates_dir, "entities.yml.mustache")
+        with open(template_path, 'r') as f:
+            template = f.read()
+        
+        data = {
+            'project_name': project_name,
+            'project_description': config['project']['general']['description']
+        }
+        
+        output = pystache.render(template, data)
+        
+        with open(os.path.join(project_dir, "entities.yml"), 'w') as f:
+            f.write(output)
+    
     def _generate_collection_components(self, configs):
         """Generate collection-components.yml"""
         template_path = os.path.join(self.templates_dir, "collection-components.yml.mustache")
@@ -191,6 +210,9 @@ class BackstageGoldenPathGenerator:
         
         # Generate .gitignore in root
         self._generate_root_gitignore()
+        
+        # Generate org.yml in root
+        self._generate_org_yml()
     
     def _generate_root_gitignore(self):
         """Generate .gitignore in backstage-templates root"""
@@ -200,6 +222,29 @@ class BackstageGoldenPathGenerator:
         
         with open(os.path.join(self.output_dir, ".gitignore"), 'w') as f:
             f.write(template)
+    
+    def _generate_org_yml(self):
+        """Generate org.yml in backstage-templates root"""
+        org_content = """---
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-user
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: admin
+spec:
+  memberOf: [guests, platform-team]
+---
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-group
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: platform-team
+spec:
+  type: team
+  children: []
+"""
+        with open(os.path.join(self.output_dir, "org.yml"), 'w') as f:
+            f.write(org_content)
     
     def _copy_project_to_skeleton(self, project_name, skeleton_dir):
         """Copy project files to skeleton excluding .java, .sql, .class, build, target"""
