@@ -5,10 +5,11 @@ import shutil
 import pystache
 
 class BackstageGoldenPathGenerator:
-    def __init__(self, projects_dir="projects", output_dir="backstage-templates", config_path="libs/config/params.json"):
+    def __init__(self, projects_dir="projects", output_dir="backstage-templates", config_path="libs/config/params.json", smithy_build_path="smithy-build.json"):
         self.projects_dir = projects_dir
         self.output_dir = output_dir
         self.config_path = config_path
+        self.smithy_build_path = smithy_build_path
         self.templates_dir = os.path.join(os.path.dirname(__file__), "templates")
         
     def generate_all(self):
@@ -52,6 +53,9 @@ class BackstageGoldenPathGenerator:
         
         # Generate docs/index.md
         self._generate_docs_index(project_name, docs_dir)
+        
+        # Copy OpenAPI specs from Smithy build
+        self._copy_openapi_specs(project_name, project_dir)
         
         # Generate entities.yml
         self._generate_entities_yml(project_name, config, project_dir)
@@ -175,18 +179,40 @@ class BackstageGoldenPathGenerator:
             with open(os.path.join(docs_dir, "index.md"), 'w') as f:
                 f.write(f"# {project_name}\n\nDocumentation coming soon...\n")
     
+    def _copy_openapi_specs(self, project_name, project_dir):
+        """Copy OpenAPI specs from Smithy build output"""
+        if not os.path.exists(self.smithy_build_path):
+            return
+        
+        with open(self.smithy_build_path, 'r') as f:
+            smithy_build = json.load(f)
+        
+        projections = smithy_build.get('projections', {})
+        openapi_dir = os.path.join(project_dir, 'openapi')
+        os.makedirs(openapi_dir, exist_ok=True)
+        
+        # Find projections that match this project
+        for projection_name in projections.keys():
+            # Check if projection name starts with project name prefix
+            # e.g., back-ms-users matches back-ms-users and back-ms-users-location
+            if projection_name.startswith(project_name.rsplit('-webflux', 1)[0]):
+                source_path = os.path.join('build', 'smithy', projection_name, 'openapi')
+                
+                if os.path.exists(source_path):
+                    # Copy all files from source to destination
+                    for file in os.listdir(source_path):
+                        src_file = os.path.join(source_path, file)
+                        if os.path.isfile(src_file):
+                            dest_file = os.path.join(openapi_dir, file)
+                            shutil.copy2(src_file, dest_file)
+    
     def _generate_entities_yml(self, project_name, config, project_dir):
         """Generate entities.yml for each project"""
         template_path = os.path.join(self.templates_dir, "entities.yml.mustache")
         with open(template_path, 'r') as f:
             template = f.read()
         
-        data = {
-            'project_name': project_name,
-            'project_description': config['project']['general']['description']
-        }
-        
-        output = pystache.render(template, data)
+        output = pystache.render(template, {})
         
         with open(os.path.join(project_dir, "entities.yml"), 'w') as f:
             f.write(output)

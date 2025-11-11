@@ -1,0 +1,99 @@
+@startuml Update Movie
+!theme plain
+title Update Movie - Hexagonal Architecture Flow
+
+actor Client
+participant "MovieController\n(Input Adapter)" as Controller
+participant "MovieUseCase\n(Domain Port)" as UseCase
+participant "MovieMapper\n(Application Layer)" as Mapper
+participant "MovieRepositoryPort\n(Domain Port)" as RepoPort
+participant "MovieRepositoryAdapter\n(Output Adapter)" as RepoAdapter
+participant "JpaMovieRepository\n(Infrastructure)" as JpaRepo
+database "Database" as DB
+
+Client -> Controller: PUT /movies/{movieId}
+activate Controller
+
+Controller -> UseCase: update(movieId, UpdateMovieRequestContent)
+activate UseCase
+note right: UseCase is implemented by MovieService
+
+UseCase -> RepoPort: findById(movieId)
+activate RepoPort
+RepoPort -> RepoAdapter: findById(movieId)
+activate RepoAdapter
+RepoAdapter -> JpaRepo: findById(movieId)
+activate JpaRepo
+JpaRepo -> DB: SELECT * FROM movies WHERE id = ?
+DB --> JpaRepo: Optional<MovieDbo>
+JpaRepo --> RepoAdapter: Optional<MovieDbo>
+deactivate JpaRepo
+
+alt Movie Found
+    RepoAdapter -> Mapper: toDomain(MovieDbo)
+    activate Mapper
+    Mapper --> RepoAdapter: Movie
+    deactivate Mapper
+    
+    RepoAdapter --> RepoPort: Optional<Movie>
+    deactivate RepoAdapter
+    RepoPort --> UseCase: Optional<Movie>
+    deactivate RepoPort
+    
+    UseCase -> Mapper: updateEntityFromRequest(UpdateMovieRequestContent, Movie)
+    activate Mapper
+    Mapper --> UseCase: void (Movie updated)
+    deactivate Mapper
+    
+    UseCase -> RepoPort: save(Movie)
+    activate RepoPort
+    RepoPort -> RepoAdapter: save(Movie)
+    activate RepoAdapter
+    
+    RepoAdapter -> Mapper: toDbo(Movie)
+    activate Mapper
+    Mapper --> RepoAdapter: MovieDbo
+    deactivate Mapper
+    
+    RepoAdapter -> JpaRepo: save(MovieDbo)
+    activate JpaRepo
+    JpaRepo -> DB: UPDATE movies SET ... WHERE id = ?
+    DB --> JpaRepo: MovieDbo
+    JpaRepo --> RepoAdapter: MovieDbo
+    deactivate JpaRepo
+    
+    RepoAdapter -> Mapper: toDomain(MovieDbo)
+    activate Mapper
+    Mapper --> RepoAdapter: Movie
+    deactivate Mapper
+    
+    RepoAdapter --> RepoPort: Movie
+    deactivate RepoAdapter
+    RepoPort --> UseCase: Movie
+    deactivate RepoPort
+    
+    UseCase -> Mapper: toUpdateResponse(Movie)
+    activate Mapper
+    Mapper --> UseCase: UpdateMovieResponseContent
+    deactivate Mapper
+    
+    UseCase --> Controller: UpdateMovieResponseContent
+    deactivate UseCase
+    
+    Controller --> Client: HTTP 200
+    deactivate Controller
+
+else Movie Not Found
+    RepoAdapter --> RepoPort: Optional.empty()
+    deactivate RepoAdapter
+    RepoPort --> UseCase: Optional.empty()
+    deactivate RepoPort
+    
+    UseCase --> Controller: NotFoundException("Movie not found")
+    deactivate UseCase
+    
+    Controller --> Client: HTTP 404
+    deactivate Controller
+end
+
+@enduml

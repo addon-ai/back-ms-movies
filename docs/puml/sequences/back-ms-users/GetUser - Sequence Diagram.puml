@@ -1,0 +1,67 @@
+@startuml Get User
+!theme plain
+title Get User - Hexagonal Architecture Flow
+
+actor Client
+participant "UserController\n(Input Adapter)" as Controller
+participant "UserUseCase\n(Domain Port)" as UseCase
+participant "UserMapper\n(Application Layer)" as Mapper
+participant "UserRepositoryPort\n(Domain Port)" as RepoPort
+participant "UserRepositoryAdapter\n(Output Adapter)" as RepoAdapter
+participant "JpaUserRepository\n(Infrastructure)" as JpaRepo
+database "Database" as DB
+
+Client -> Controller: GET /users/{userId}
+activate Controller
+
+Controller -> UseCase: get(userId)
+activate UseCase
+note right: UseCase is implemented by UserService
+
+UseCase -> RepoPort: findById(userId)
+activate RepoPort
+RepoPort -> RepoAdapter: findById(userId)
+activate RepoAdapter
+RepoAdapter -> JpaRepo: findById(userId)
+activate JpaRepo
+JpaRepo -> DB: SELECT * FROM users WHERE id = ?
+DB --> JpaRepo: Optional<UserDbo>
+JpaRepo --> RepoAdapter: Optional<UserDbo>
+deactivate JpaRepo
+
+alt User Found
+    RepoAdapter -> Mapper: toDomain(UserDbo)
+    activate Mapper
+    Mapper --> RepoAdapter: User
+    deactivate Mapper
+    
+    RepoAdapter --> RepoPort: Optional<User>
+    deactivate RepoAdapter
+    RepoPort --> UseCase: Optional<User>
+    deactivate RepoPort
+    
+    UseCase -> Mapper: toGetResponse(User)
+    activate Mapper
+    Mapper --> UseCase: GetUserResponseContent
+    deactivate Mapper
+    
+    UseCase --> Controller: GetUserResponseContent
+    deactivate UseCase
+    
+    Controller --> Client: HTTP 200
+    deactivate Controller
+
+else User Not Found
+    RepoAdapter --> RepoPort: Optional.empty()
+    deactivate RepoAdapter
+    RepoPort --> UseCase: Optional.empty()
+    deactivate RepoPort
+    
+    UseCase --> Controller: NotFoundException("User not found")
+    deactivate UseCase
+    
+    Controller --> Client: HTTP 404
+    deactivate Controller
+end
+
+@enduml
