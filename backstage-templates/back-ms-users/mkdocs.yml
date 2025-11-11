@@ -1,8 +1,0 @@
-site_name: 'back-ms-users'
-site_description: 'Microservice for users management'
-
-nav:
-  - Introduction: index.md
-
-plugins:
-  - techdocs-core

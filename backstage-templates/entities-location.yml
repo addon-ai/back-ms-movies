@@ -1,8 +1,0 @@
-apiVersion: backstage.io/v1alpha1
-kind: Location
-metadata:
-  name: backstage-entities-wildcard
-  description: All entities using wildcard pattern
-spec:
-  targets:
-    - https://github.com/addon-ai/backstage-templates/blob/main/*/entities/*/*-entity.yml
