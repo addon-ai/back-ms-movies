@@ -182,6 +182,10 @@ echo ""
 python3 "$PROJECT_ROOT/libs/utils/branch_manager.py" --commit
 
 echo ""
+echo "🔒 Verifying main repository remote..."
+python3 "$PROJECT_ROOT/libs/utils/protect_main_repo.py"
+
+echo ""
 echo "🎉 Code Generation Pipeline complete!"
 echo "📁 Generated outputs:"
 echo "   • projects/ → Java Spring Boot applications with hexagonal architecture"

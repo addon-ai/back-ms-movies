@@ -172,6 +172,10 @@ class GitManager:
     
     def commit_project_code(self):
         """Create feature branch with all project code"""
+        # CRITICAL: Never execute in boiler-plate-code-gen repository
+        if 'boiler-plate-code-gen' in self.project_path and os.path.exists(os.path.join(self.project_path, 'scripts', 'code-gen-pipeline.sh')):
+            raise ValueError(f"commit_project_code should not be used in boiler-plate-code-gen repository: {self.project_path}")
+        
         os.chdir(self.project_path)
         
         # Clean up any submodule references
