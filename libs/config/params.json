@@ -70,7 +70,7 @@
                 "publishDistributionRepo": "https://maven.pkg.github.com/addon-ai/back-ms-users"
             },
             "github": {
-                "on": false,
+                "on": true,
                 "organization": "addon-ai",
                 "baseUrl": "https://github.com/addon-ai",
                 "apiUrl": "https://api.github.com",
@@ -181,7 +181,7 @@
                 "publishDistributionRepo": "https://maven.pkg.github.com/addon-ai/back-ms-movies"
             },
             "github": {
-                "on": false,
+                "on": true,
                 "organization": "addon-ai",
                 "baseUrl": "https://github.com/addon-ai",
                 "apiUrl": "https://api.github.com",
@@ -411,7 +411,7 @@
                 "publishDistributionRepo": "https://maven.pkg.github.com/addon-ai/back-ms-movies-webflux"
             },
             "github": {
-                "on": false,
+                "on": true,
                 "organization": "addon-ai",
                 "baseUrl": "https://github.com/addon-ai",
                 "apiUrl": "https://api.github.com",
