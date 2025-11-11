@@ -1,8 +1,0 @@
-site_name: 'back-ms-movies-webflux'
-site_description: 'Reactive microservice for movie rental management with Spring WebFlux'
-
-nav:
-  - Introduction: index.md
-
-plugins:
-  - techdocs-core
