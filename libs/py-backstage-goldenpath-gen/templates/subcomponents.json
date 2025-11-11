@@ -1,0 +1,60 @@
+{
+  "layers": {
+    "domain": [
+      {
+        "name": "model",
+        "title": "Domain Model",
+        "description": "Core business entities and value objects"
+      },
+      {
+        "name": "ports-input",
+        "title": "Input Ports",
+        "description": "Interfaces defining use cases and business operations"
+      },
+      {
+        "name": "ports-output",
+        "title": "Output Ports",
+        "description": "Interfaces for external dependencies"
+      }
+    ],
+    "application": [
+      {
+        "name": "dto",
+        "title": "Data Transfer Objects",
+        "description": "Request and response objects for API communication"
+      },
+      {
+        "name": "mapper",
+        "title": "Mappers",
+        "description": "MapStruct interfaces for entity transformations"
+      },
+      {
+        "name": "service",
+        "title": "Application Services",
+        "description": "Implementation of business use cases"
+      }
+    ],
+    "infrastructure": [
+      {
+        "name": "input-adapters",
+        "title": "Input Adapters (Controllers)",
+        "description": "REST controllers handling HTTP requests"
+      },
+      {
+        "name": "persistence-adapter",
+        "title": "Persistence Adapter",
+        "description": "Implementation of output ports for data persistence"
+      },
+      {
+        "name": "persistence-entity",
+        "title": "Persistence Entity",
+        "description": "JPA entities for database mapping"
+      },
+      {
+        "name": "persistence-repository",
+        "title": "Persistence Repository",
+        "description": "Spring Data JPA repositories"
+      }
+    ]
+  }
+}

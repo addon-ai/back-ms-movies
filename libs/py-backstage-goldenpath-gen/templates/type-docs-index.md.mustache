@@ -1,0 +1,18 @@
+# {{type_name}} Template
+
+{{#is_webflux}}Reactive WebFlux{{/is_webflux}}{{^is_webflux}}Spring Boot{{/is_webflux}} microservice template with Hexagonal Architecture.
+
+## Technology Stack
+
+| Dependency | Version |
+|------------|---------|
+| Java | {{java_version}} |
+| Spring Boot | {{spring_boot_version}} |
+| MapStruct | {{mapstruct_version}} |
+| Lombok | {{lombok_version}} |
+
+## Architecture Layers
+
+- [Domain Layer](domain-layer.md)
+- [Application Layer](application-layer.md)
+- [Infrastructure Layer](infrastructure-layer.md)

@@ -1,0 +1,16 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: webflux-service-infrastructure-persistence-adapter
+  title: Persistence Adapter
+  description: Implementation of output ports for data persistence
+  tags:
+    - hexagonal-architecture
+    - infrastructure-layer
+    - reactive
+    - webflux
+spec:
+  type: library
+  lifecycle: production
+  owner: platform-team
+  subcomponentOf: component:default/webflux-service-infrastructure-layer

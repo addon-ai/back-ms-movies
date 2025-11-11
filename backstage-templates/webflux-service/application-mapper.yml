@@ -1,0 +1,16 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: webflux-service-application-mapper
+  title: Mappers
+  description: MapStruct interfaces for entity transformations
+  tags:
+    - hexagonal-architecture
+    - application-layer
+    - reactive
+    - webflux
+spec:
+  type: library
+  lifecycle: production
+  owner: platform-team
+  subcomponentOf: component:default/webflux-service-application-layer

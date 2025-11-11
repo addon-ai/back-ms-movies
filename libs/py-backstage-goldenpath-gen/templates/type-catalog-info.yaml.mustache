@@ -1,14 +1,19 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: webflux-service
-  title: webflux-service Template
-  description: Hexagonal Architecture template for reactive WebFlux microservices
+  name: {{type_name}}
+  title: {{type_name}} Template
+  description: Hexagonal Architecture template for {{#is_webflux}}reactive WebFlux{{/is_webflux}}{{^is_webflux}}Spring Boot{{/is_webflux}} microservices
   tags:
     - template
     - hexagonal-architecture
+    {{#is_webflux}}
     - webflux
     - reactive
+    {{/is_webflux}}
+    {{^is_webflux}}
+    - spring-boot
+    {{/is_webflux}}
 spec:
   type: template
   lifecycle: production
@@ -18,7 +23,7 @@ spec:
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: webflux-service-domain-layer
+  name: {{type_name}}-domain-layer
   title: Domain Layer
   description: Core business logic and entities
   tags:
@@ -28,12 +33,12 @@ spec:
   type: library
   lifecycle: production
   owner: platform-team
-  subcomponentOf: component:default/webflux-service
+  subcomponentOf: component:default/{{type_name}}
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: webflux-service-application-layer
+  name: {{type_name}}-application-layer
   title: Application Layer
   description: Use cases, DTOs, and mappers
   tags:
@@ -43,12 +48,12 @@ spec:
   type: library
   lifecycle: production
   owner: platform-team
-  subcomponentOf: component:default/webflux-service
+  subcomponentOf: component:default/{{type_name}}
 ---
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: webflux-service-infrastructure-layer
+  name: {{type_name}}-infrastructure-layer
   title: Infrastructure Layer
   description: Controllers, repositories, and external adapters
   tags:
@@ -58,4 +63,4 @@ spec:
   type: library
   lifecycle: production
   owner: platform-team
-  subcomponentOf: component:default/webflux-service
+  subcomponentOf: component:default/{{type_name}}

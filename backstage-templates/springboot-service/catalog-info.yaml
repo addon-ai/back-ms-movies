@@ -1,17 +1,60 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: springboot-service-template
-  description: Create a new Java Springboot microservice with hexagonal architecture
+  name: springboot-service
+  title: springboot-service Template
+  description: Hexagonal Architecture template for Spring Boot microservices
   tags:
-    - java
-    - springboot
-    - hexagonal-architecture
     - template
-  annotations:
-    github.com/project-slug: addon-ai/backstage-templates
+    - hexagonal-architecture
+    - spring-boot
 spec:
   type: template
-  owner: platform-team
   lifecycle: production
-  subcomponentOf: hexagonal-architecture-templates
+  owner: platform-team
+  subcomponentOf: component:default/hexagonal-architecture-templates
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: springboot-service-domain-layer
+  title: Domain Layer
+  description: Core business logic and entities
+  tags:
+    - hexagonal-architecture
+    - domain-layer
+spec:
+  type: library
+  lifecycle: production
+  owner: platform-team
+  subcomponentOf: component:default/springboot-service
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: springboot-service-application-layer
+  title: Application Layer
+  description: Use cases, DTOs, and mappers
+  tags:
+    - hexagonal-architecture
+    - application-layer
+spec:
+  type: library
+  lifecycle: production
+  owner: platform-team
+  subcomponentOf: component:default/springboot-service
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: springboot-service-infrastructure-layer
+  title: Infrastructure Layer
+  description: Controllers, repositories, and external adapters
+  tags:
+    - hexagonal-architecture
+    - infrastructure-layer
+spec:
+  type: library
+  lifecycle: production
+  owner: platform-team
+  subcomponentOf: component:default/springboot-service

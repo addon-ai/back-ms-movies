@@ -1,175 +1,268 @@
 #!/usr/bin/env python3
-"""
-Backstage Golden Path Generator
-Generates Backstage Software Templates from Java projects
-"""
 import os
-import shutil
 import json
-from pathlib import Path
+import shutil
 import pystache
 
-
 class BackstageGoldenPathGenerator:
-    """Generates Backstage Golden Paths from Java projects."""
+    def __init__(self, projects_dir="projects", output_dir="backstage-templates", config_path="libs/config/params.json"):
+        self.projects_dir = projects_dir
+        self.output_dir = output_dir
+        self.config_path = config_path
+        self.templates_dir = os.path.join(os.path.dirname(__file__), "templates")
+        
+    def generate_all(self):
+        """Generate Backstage templates for all projects"""
+        print("🚀 Starting Backstage Golden Path Generation...")
+        
+        with open(self.config_path, 'r') as f:
+            configs = json.load(f)
+        
+        os.makedirs(self.output_dir, exist_ok=True)
+        
+        for config in configs:
+            project_name = config['project']['general']['name']
+            self.generate_template(project_name, config)
+        
+        self._generate_root_catalog()
+        self._generate_type_docs(configs)
+        
+        print(f"✅ Backstage templates generated in {self.output_dir}/")
     
-    def __init__(self, config_path: str):
-        """Initialize with configuration."""
-        with open(config_path, 'r') as f:
-            self.projects = json.load(f)
-        self.templates_dir = Path(__file__).parent / 'templates'
-    
-    def generate_all(self, projects_dir: str, output_dir: str):
-        """Generate Backstage templates for all projects."""
-        projects_path = Path(projects_dir)
-        output_path = Path(output_dir)
-        output_path.mkdir(parents=True, exist_ok=True)
+    def generate_template(self, project_name, config):
+        """Generate template for a single project"""
+        print(f"  📦 Generating template for {project_name}...")
         
-        generated_templates = set()
-        template_info = []
-        
-        for project_config in self.projects:
-            project_name = project_config['project']['general']['name']
-            source_project = projects_path / project_name
-            
-            if not source_project.exists():
-                print(f"⚠️  Project {project_name} not found, skipping...")
-                continue
-            
-            stack_type = 'webflux' if 'webflux' in project_name.lower() else 'springboot'
-            template_name = f"{stack_type}-service"
-            
-            if template_name in generated_templates:
-                print(f"⏭️  Skipping {project_name} - {template_name} already generated")
-                continue
-            
-            print(f"📦 Generating Backstage template for {project_name} ({stack_type})...")
-            template_data = self.generate_template(source_project, output_path / template_name, project_config, stack_type)
-            generated_templates.add(template_name)
-            template_info.append(template_data)
-        
-        if template_info:
-            self._generate_root_catalog(output_path, template_info)
-    
-    def generate_template(self, source_project: Path, output_path: Path, project_config: dict, stack_type: str):
-        """Generate a single Backstage template with skeleton."""
-        skeleton_path = output_path / 'skeleton'
-        if skeleton_path.exists():
-            shutil.rmtree(skeleton_path)
-        
-        def ignore_files(dir, files):
-            return [f for f in files if f.endswith(('.java', '.sql')) or f in ('devops', 'target', '.git')]
-        
-        shutil.copytree(source_project, skeleton_path, ignore=ignore_files)
-        
-        project_info = project_config['project']
-        github_org = project_config.get('devops', {}).get('github', {}).get('organization', 'your-org')
+        template_dir = os.path.join(self.output_dir, project_name)
+        os.makedirs(template_dir, exist_ok=True)
         
         # Generate template.yaml
-        template_vars = {
-            'template_id': f"{stack_type}-service-template",
-            'template_title': f"Java {stack_type.title()} Service",
-            'template_description': f"Create a new Java {stack_type.title()} microservice with hexagonal architecture",
+        self._generate_template_yaml(template_dir, project_name, config)
+        
+        # Generate skeleton
+        self._generate_skeleton(project_name, template_dir, config)
+        
+        # Generate project-level catalog
+        self._generate_project_catalog(template_dir, project_name, config)
+    
+    def _generate_template_yaml(self, template_dir, project_name, config):
+        """Generate template.yaml file"""
+        template_path = os.path.join(self.templates_dir, "template.yaml.mustache")
+        with open(template_path, 'r') as f:
+            template = f.read()
+        
+        stack_type = config['project']['general'].get('type', 'springBoot')
+        is_webflux = stack_type == 'springWebflux'
+        
+        data = {
+            'project_name': project_name,
+            'project_description': config['project']['general']['description'],
             'stack_type': stack_type,
-            'default_owner': 'platform-team',
-            'default_groupId': project_info['params']['groupId'],
-            'default_artifactId': project_info['params']['artifactId'],
-            'default_javaVersion': project_config.get('devops', {}).get('ci', {}).get('javaVersion', '21'),
-            'default_springBootVersion': project_info['dependencies'].get('springBoot', '3.2.5'),
-            'default_coverageThreshold': project_config.get('devops', {}).get('ci', {}).get('coverageThreshold', '85'),
-            'github_org': github_org
+            'is_webflux': is_webflux,
+            'github_org': config['devops']['github']['organization']
         }
         
-        self._render_template('template.yaml.mustache', output_path / 'template.yaml', template_vars)
+        output = pystache.render(template, data)
         
-        # Generate catalog-info.yaml at template level
-        self._render_template('template-catalog-info.yaml.mustache', output_path / 'catalog-info.yaml', template_vars)
+        with open(os.path.join(template_dir, "template.yaml"), 'w') as f:
+            f.write(output)
+    
+    def _generate_skeleton(self, project_name, template_dir, config):
+        """Generate skeleton directory"""
+        skeleton_dir = os.path.join(template_dir, "skeleton")
+        source_dir = os.path.join(self.projects_dir, project_name)
         
-        # Generate catalog-info.yaml for skeleton
-        catalog_vars = {
-            'system_name': 'backend-services',
+        if os.path.exists(skeleton_dir):
+            shutil.rmtree(skeleton_dir)
+        
+        def ignore_files(dir, files):
+            ignored = []
+            for f in files:
+                if f.endswith('.java') or f.endswith('.sql') or f == 'devops' or f == 'target' or f == '.git':
+                    ignored.append(f)
+            return ignored
+        
+        shutil.copytree(source_dir, skeleton_dir, ignore=ignore_files)
+        
+        # Generate catalog-info.yaml in skeleton
+        catalog_template_path = os.path.join(self.templates_dir, "catalog-info.yaml.mustache")
+        with open(catalog_template_path, 'r') as f:
+            catalog_template = f.read()
+        
+        stack_type = config['project']['general'].get('type', 'springBoot')
+        is_webflux = stack_type == 'springWebflux'
+        
+        data = {
+            'project_description': config['project']['general']['description'],
             'stack_type': stack_type,
-            'is_webflux': stack_type == 'webflux'
+            'is_webflux': is_webflux
         }
         
-        self._render_template('catalog-info.yaml.mustache', skeleton_path / 'catalog-info.yaml', catalog_vars)
+        catalog_output = pystache.render(catalog_template, data)
         
-        print(f"✅ Backstage template created at {output_path}")
+        with open(os.path.join(skeleton_dir, "catalog-info.yaml"), 'w') as f:
+            f.write(catalog_output)
+    
+    def _generate_project_catalog(self, template_dir, project_name, config):
+        """Generate project-level catalog-info.yaml"""
+        template_path = os.path.join(self.templates_dir, "template-catalog-info.yaml.mustache")
+        with open(template_path, 'r') as f:
+            template = f.read()
         
-        return {
-            'template_id': template_vars['template_id'],
-            'template_title': template_vars['template_title'],
-            'template_folder': output_path.name
+        stack_type = config['project']['general'].get('type', 'springBoot')
+        
+        data = {
+            'project_name': project_name,
+            'project_description': config['project']['general']['description'],
+            'stack_type': stack_type,
+            'github_org': config['devops']['github']['organization']
         }
-    
-    def _render_template(self, template_name: str, output_path: Path, context: dict):
-        """Render a Mustache template."""
-        template_path = self.templates_dir / template_name
-        template_content = template_path.read_text(encoding='utf-8')
-        rendered = pystache.render(template_content, context)
-        output_path.write_text(rendered, encoding='utf-8')
-    
-    def _generate_root_catalog(self, output_path: Path, template_info: list):
-        """Generate root catalog-info.yaml."""
-        github_org = self.projects[0].get('devops', {}).get('github', {}).get('organization', 'your-org')
         
-        catalog_content = [
-            "apiVersion: backstage.io/v1alpha1",
-            "kind: Component",
-            "metadata:",
-            "  name: hexagonal-architecture-templates",
-            "  description: |",
-            "    Spring Boot service templates with Hexagonal Architecture (Ports and Adapters).",
-            "    Includes both traditional Spring Boot and reactive WebFlux implementations.",
-            "  tags:",
-            "    - backstage",
-            "    - templates",
-            "    - java",
-            "    - spring-boot",
-            "    - webflux",
-            "    - hexagonal-architecture",
-            "    - microservices",
-            "  links:",
-            "    - title: Documentation",
-            f"      url: https://github.com/{github_org}/backstage-templates/blob/main/README.md",
-            "  annotations:",
-            f"    github.com/project-slug: {github_org}/backstage-templates",
-            f"    backstage.io/techdocs-ref: url:https://github.com/{github_org}/backstage-templates/tree/main",
-            "spec:",
-            "  type: template-collection",
-            "  owner: platform-team",
-            "  lifecycle: production"
-        ]
+        output = pystache.render(template, data)
         
-        catalog_file = output_path / 'catalog-info.yaml'
-        catalog_file.write_text('\n'.join(catalog_content), encoding='utf-8')
+        with open(os.path.join(template_dir, "catalog-info.yaml"), 'w') as f:
+            f.write(output)
+    
+    def _generate_root_catalog(self):
+        """Generate root catalog-info.yaml"""
+        template_path = os.path.join(self.templates_dir, "README.md.mustache")
+        with open(template_path, 'r') as f:
+            readme_template = f.read()
         
-        print(f"\n📋 Root catalog generated: {catalog_file}")
-
-
-def main():
-    """Main entry point."""
-    import sys
+        readme_output = pystache.render(readme_template, {})
+        
+        with open(os.path.join(self.output_dir, "README.md"), 'w') as f:
+            f.write(readme_output)
+        
+        catalog_path = os.path.join(self.templates_dir, "catalog-components.yaml.mustache")
+        with open(catalog_path, 'r') as f:
+            catalog_template = f.read()
+        
+        catalog_output = pystache.render(catalog_template, {})
+        
+        with open(os.path.join(self.output_dir, "catalog-info.yaml"), 'w') as f:
+            f.write(catalog_output)
     
-    if len(sys.argv) < 4:
-        print("Usage: python main.py <config_path> <projects_dir> <output_dir>")
-        sys.exit(1)
+    def _generate_type_docs(self, configs):
+        """Generate type-level documentation folders"""
+        types = {}
+        for config in configs:
+            stack_type = config['project']['general'].get('type', 'springBoot')
+            if stack_type not in types:
+                types[stack_type] = []
+            types[stack_type].append(config)
+        
+        for stack_type, type_configs in types.items():
+            type_name = "springboot-service" if stack_type == "springBoot" else "webflux-service"
+            type_dir = os.path.join(self.output_dir, type_name)
+            os.makedirs(type_dir, exist_ok=True)
+            
+            # Generate type-level catalog
+            self._generate_type_catalog(type_dir, type_name, stack_type)
+            
+            # Generate docs
+            self._generate_type_documentation(type_dir, type_name, stack_type, type_configs[0])
+            
+            # Generate subcomponents
+            self._generate_subcomponents(type_dir, type_name, stack_type)
     
-    config_path = sys.argv[1]
-    projects_dir = sys.argv[2]
-    output_dir = sys.argv[3]
+    def _generate_type_catalog(self, type_dir, type_name, stack_type):
+        """Generate type-level catalog-info.yaml"""
+        template_path = os.path.join(self.templates_dir, "type-catalog-info.yaml.mustache")
+        with open(template_path, 'r') as f:
+            template = f.read()
+        
+        is_webflux = stack_type == 'springWebflux'
+        
+        data = {
+            'type_name': type_name,
+            'stack_type': stack_type,
+            'is_webflux': is_webflux
+        }
+        
+        output = pystache.render(template, data)
+        
+        with open(os.path.join(type_dir, "catalog-info.yaml"), 'w') as f:
+            f.write(output)
     
-    generator = BackstageGoldenPathGenerator(config_path)
-    generator.generate_all(projects_dir, output_dir)
+    def _generate_type_documentation(self, type_dir, type_name, stack_type, sample_config):
+        """Generate documentation for service type"""
+        docs_dir = os.path.join(type_dir, "docs")
+        os.makedirs(docs_dir, exist_ok=True)
+        
+        # Generate index
+        index_template_path = os.path.join(self.templates_dir, "type-docs-index.md.mustache")
+        with open(index_template_path, 'r') as f:
+            index_template = f.read()
+        
+        dependencies = sample_config['project']['dependencies']
+        is_webflux = stack_type == 'springWebflux'
+        
+        data = {
+            'type_name': type_name,
+            'stack_type': stack_type,
+            'is_webflux': is_webflux,
+            'spring_boot_version': dependencies['springBoot'],
+            'java_version': dependencies['java'],
+            'mapstruct_version': dependencies['mapstruct'],
+            'lombok_version': dependencies['lombok']
+        }
+        
+        index_output = pystache.render(index_template, data)
+        
+        with open(os.path.join(docs_dir, "index.md"), 'w') as f:
+            f.write(index_output)
+        
+        # Generate layer docs
+        for layer in ['domain', 'application', 'infrastructure']:
+            layer_template_path = os.path.join(self.templates_dir, f"{layer}-layer.md.mustache")
+            with open(layer_template_path, 'r') as f:
+                layer_template = f.read()
+            
+            layer_output = pystache.render(layer_template, data)
+            
+            with open(os.path.join(docs_dir, f"{layer}-layer.md"), 'w') as f:
+                f.write(layer_output)
+        
+        # Generate mkdocs.yml
+        mkdocs_template_path = os.path.join(self.templates_dir, "mkdocs.yml.mustache")
+        with open(mkdocs_template_path, 'r') as f:
+            mkdocs_template = f.read()
+        
+        mkdocs_output = pystache.render(mkdocs_template, data)
+        
+        with open(os.path.join(type_dir, "mkdocs.yml"), 'w') as f:
+            f.write(mkdocs_output)
     
-    print("\n✅ Backstage templates generated successfully!")
-    print("\n📚 Structure created:")
-    print("   • backstage-templates/catalog-info.yaml")
-    print("   • backstage-templates/springboot-service/template.yaml")
-    print("   • backstage-templates/springboot-service/skeleton/")
-    print("   • backstage-templates/webflux-service/template.yaml")
-    print("   • backstage-templates/webflux-service/skeleton/")
+    def _generate_subcomponents(self, type_dir, type_name, stack_type):
+        """Generate individual YAML files for hexagonal architecture subcomponents"""
+        subcomponents_path = os.path.join(self.templates_dir, "subcomponents.json")
+        with open(subcomponents_path, 'r') as f:
+            subcomponents_data = json.load(f)
+        
+        subcomponent_template_path = os.path.join(self.templates_dir, "subcomponent.yml.mustache")
+        with open(subcomponent_template_path, 'r') as f:
+            subcomponent_template = f.read()
+        
+        is_webflux = stack_type == 'springWebflux'
+        
+        for layer, components in subcomponents_data['layers'].items():
+            for component in components:
+                data = {
+                    'component_name': component['name'],
+                    'component_title': component['title'],
+                    'component_description': component['description'],
+                    'layer_name': layer,
+                    'type_name': type_name,
+                    'is_webflux': is_webflux
+                }
+                
+                output = pystache.render(subcomponent_template, data)
+                
+                filename = f"{layer}-{component['name']}.yml"
+                with open(os.path.join(type_dir, filename), 'w') as f:
+                    f.write(output)
 
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    generator = BackstageGoldenPathGenerator()
+    generator.generate_all()

@@ -1,0 +1,16 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: webflux-service-domain-ports-input
+  title: Input Ports
+  description: Interfaces defining use cases and business operations
+  tags:
+    - hexagonal-architecture
+    - domain-layer
+    - reactive
+    - webflux
+spec:
+  type: library
+  lifecycle: production
+  owner: platform-team
+  subcomponentOf: component:default/webflux-service-domain-layer

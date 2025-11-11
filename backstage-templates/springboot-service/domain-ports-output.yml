@@ -1,0 +1,14 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: springboot-service-domain-ports-output
+  title: Output Ports
+  description: Interfaces for external dependencies
+  tags:
+    - hexagonal-architecture
+    - domain-layer
+spec:
+  type: library
+  lifecycle: production
+  owner: platform-team
+  subcomponentOf: component:default/springboot-service-domain-layer

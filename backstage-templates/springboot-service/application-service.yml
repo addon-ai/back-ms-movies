@@ -1,0 +1,14 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: springboot-service-application-service
+  title: Application Services
+  description: Implementation of business use cases
+  tags:
+    - hexagonal-architecture
+    - application-layer
+spec:
+  type: library
+  lifecycle: production
+  owner: platform-team
+  subcomponentOf: component:default/springboot-service-application-layer

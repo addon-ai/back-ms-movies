@@ -1,0 +1,12 @@
+site_name: springboot-service
+site_description: Hexagonal Architecture Template Documentation
+
+nav:
+  - Home: index.md
+  - Architecture:
+      - Domain Layer: domain-layer.md
+      - Application Layer: application-layer.md
+      - Infrastructure Layer: infrastructure-layer.md
+
+theme:
+  name: material

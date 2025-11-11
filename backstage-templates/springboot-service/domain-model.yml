@@ -1,0 +1,14 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: springboot-service-domain-model
+  title: Domain Model
+  description: Core business entities and value objects
+  tags:
+    - hexagonal-architecture
+    - domain-layer
+spec:
+  type: library
+  lifecycle: production
+  owner: platform-team
+  subcomponentOf: component:default/springboot-service-domain-layer

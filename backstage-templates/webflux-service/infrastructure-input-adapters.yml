@@ -1,0 +1,16 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: webflux-service-infrastructure-input-adapters
+  title: Input Adapters (Controllers)
+  description: REST controllers handling HTTP requests
+  tags:
+    - hexagonal-architecture
+    - infrastructure-layer
+    - reactive
+    - webflux
+spec:
+  type: library
+  lifecycle: production
+  owner: platform-team
+  subcomponentOf: component:default/webflux-service-infrastructure-layer
