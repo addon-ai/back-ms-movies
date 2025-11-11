@@ -1,0 +1,17 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: back-ms-users
+  description: Microservice for users management
+  tags:
+    - java
+    - spring-boot
+    - hexagonal-architecture
+    - template
+  annotations:
+    github.com/project-slug: addon-ai/backstage-templates
+    backstage.io/techdocs-ref: dir:.
+spec:
+  type: service
+  owner: platform-team
+  lifecycle: production
