@@ -108,6 +108,9 @@ class GitManager:
             result = subprocess.run(['git', 'remote', 'get-url', 'origin'], capture_output=True, text=True, check=True)
             current_url = result.stdout.strip()
             
+            # Clean up any mailto: prefixes (bug fix)
+            current_url = current_url.replace('mailto:', '')
+            
             # Create expected SSH remote URL
             ssh_base = self.config.get('github', {}).get('sshUrl', 'git@github.com:addon-ai')
             expected_url = f"{ssh_base}/{repo_name}.git"
