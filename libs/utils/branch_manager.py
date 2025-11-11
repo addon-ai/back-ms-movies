@@ -70,11 +70,11 @@ class BranchManager:
     def _delete_branch(self, branch_name: str):
         """Delete a branch locally and remotely"""
         try:
-            # Switch to main if we're on the branch to be deleted
+            # Switch to master if we're on the branch to be deleted
             current_branch = subprocess.run(['git', 'branch', '--show-current'], 
                                           capture_output=True, text=True, check=True).stdout.strip()
             if current_branch == branch_name:
-                subprocess.run(['git', 'checkout', 'main'], check=True)
+                subprocess.run(['git', 'checkout', 'master'], check=True)
             
             # Delete local branch
             subprocess.run(['git', 'branch', '-D', branch_name], check=True)
