@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import json
+import shutil
 import pystache
 
 class BackstageGoldenPathGenerator:
@@ -126,6 +127,9 @@ class BackstageGoldenPathGenerator:
         
         # Generate README.md
         self._generate_skeleton_readme(skeleton_dir)
+        
+        # Copy project files to skeleton
+        self._copy_project_to_skeleton(project_name, skeleton_dir)
     
     def _generate_skeleton_readme(self, skeleton_dir):
         """Generate skeleton/README.md"""
@@ -196,6 +200,36 @@ class BackstageGoldenPathGenerator:
         
         with open(os.path.join(self.output_dir, ".gitignore"), 'w') as f:
             f.write(template)
+    
+    def _copy_project_to_skeleton(self, project_name, skeleton_dir):
+        """Copy project files to skeleton excluding .java, .sql, .class, build, target"""
+        import shutil
+        
+        project_path = os.path.join(self.projects_dir, project_name)
+        if not os.path.exists(project_path):
+            return
+        
+        exclude_extensions = {'.java', '.sql', '.class'}
+        exclude_dirs = {'build', 'target', '.git', '.idea', '__pycache__'}
+        
+        for root, dirs, files in os.walk(project_path):
+            # Filter out excluded directories
+            dirs[:] = [d for d in dirs if d not in exclude_dirs]
+            
+            # Calculate relative path
+            rel_path = os.path.relpath(root, project_path)
+            dest_dir = skeleton_dir if rel_path == '.' else os.path.join(skeleton_dir, rel_path)
+            
+            # Create destination directory
+            os.makedirs(dest_dir, exist_ok=True)
+            
+            # Copy files
+            for file in files:
+                file_ext = os.path.splitext(file)[1]
+                if file_ext not in exclude_extensions:
+                    src_file = os.path.join(root, file)
+                    dest_file = os.path.join(dest_dir, file)
+                    shutil.copy2(src_file, dest_file)
     
     def _generate_root_mkdocs(self):
         """Generate root mkdocs.yml"""

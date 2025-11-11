@@ -1,0 +1,8 @@
+site_name: 'back-ms-movies'
+site_description: 'Microservice for movie rental management'
+
+nav:
+  - Introduction: index.md
+
+plugins:
+  - techdocs-core
