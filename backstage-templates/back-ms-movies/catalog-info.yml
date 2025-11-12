@@ -1,0 +1,35 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: back-ms-movies
+  description: Microservice for movie rental management
+  tags:
+    - java
+    - spring-boot
+    - hexagonal-architecture
+    - template
+  annotations:
+    github.com/project-slug: addon-ai/backstage-templates
+    backstage.io/techdocs-ref: dir:.
+    backstage.io/source-template: template:default/back-ms-movies
+    github.com/workflows: ci-cd.yml
+spec:
+  type: service
+  owner: platform-team
+  lifecycle: production
+  system: movies-system
+  providesApis:
+    - movie-api
+  dependsOn:
+    - resource:java-21-movies
+    - resource:spring-boot-3-2-5-movies
+    - resource:mapstruct-1-5-5-movies
+    - resource:lombok-1-18-30-movies
+    - resource:postgresql-42-7-3-movies
+    - resource:h2-2-2-224-movies
+    - resource:springdoc-2-1-0-movies
+    - resource:maven-compiler-3-11-0-movies
+    - resource:maven-surefire-3-2-5-movies
+    - resource:lombok-mapstruct-binding-0-2-0-movies
+    - resource:jacoco-0-8-11-movies
+    - resource:flyway-10-10-0-movies

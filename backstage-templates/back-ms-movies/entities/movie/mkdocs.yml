@@ -1,0 +1,11 @@
+site_name: 'Movie Service API Documentation'
+site_description: 'A comprehensive service for managing movie rentals with catalog and transaction processing. This service provides movie catalog management (CRUD operations), rental transaction processing, inventory tracking and availability management, late fee calculation and payment processing, and user rental history and status tracking.'
+
+docs_dir: docs
+
+nav:
+  - Introduction: index.md
+  - API Reference: api-reference.md
+
+plugins:
+  - techdocs-core

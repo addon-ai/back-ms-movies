@@ -1,0 +1,8 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: hexagonal-components-location
+  description: All template components using wildcard pattern
+spec:
+  targets:
+    - https://github.com/addon-ai/backstage-templates/blob/main/*/catalog-info.yml

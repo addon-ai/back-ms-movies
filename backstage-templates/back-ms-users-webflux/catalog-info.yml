@@ -1,0 +1,34 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: back-ms-users-webflux
+  description: Reactive microservice for users management with Spring WebFlux
+  tags:
+    - java
+    - spring-webflux
+    - hexagonal-architecture
+    - template
+  annotations:
+    github.com/project-slug: addon-ai/backstage-templates
+    backstage.io/techdocs-ref: dir:.
+    backstage.io/source-template: template:default/back-ms-users-webflux
+    github.com/workflows: ci-cd.yml
+spec:
+  type: service
+  owner: platform-team
+  lifecycle: production
+  system: users-system
+  providesApis:
+    - location-reactive-api
+    - user-reactive-api
+  dependsOn:
+    - resource:java-21-users
+    - resource:spring-boot-3-2-5-users
+    - resource:mapstruct-1-5-5-users
+    - resource:lombok-1-18-30-users
+    - resource:postgresql-42-7-3-users
+    - resource:maven-compiler-3-11-0-users
+    - resource:maven-surefire-3-2-5-users
+    - resource:lombok-mapstruct-binding-0-2-0-users
+    - resource:jacoco-0-8-11-users
+    - resource:flyway-10-10-0-users

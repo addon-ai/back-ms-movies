@@ -1,0 +1,29 @@
+# 📚 API Reference
+
+## OpenAPI Specification
+
+The complete API specification is available in the OpenAPI format. This specification includes:
+
+- All available endpoints
+- Request/response schemas
+- Authentication requirements
+- Error codes and responses
+
+## 🔑 Key Endpoints
+
+
+### Movies
+- `GET /movies` - Lists movies with filtering and pagination. Returns a paginated list of movie...
+- `POST /movies` - Creates a new movie in the rental catalog with complete information including...
+- `DELETE /movies/{movieId}` - Removes a movie from the catalog. Permanently removes a movie from the rental...
+- `GET /movies/{movieId}` - Retrieves a movie by its unique identifier. Returns complete movie informatio...
+- `PUT /movies/{movieId}` - Updates an existing movie's information. Allows partial updates to movie cata...
+
+### Rentals
+- `GET /rentals` - Lists rental transactions with filtering and pagination. Returns a paginated ...
+- `POST /rentals` - Creates a new movie rental transaction. Processes a new rental request by che...
+- `GET /rentals/{rentalId}` - Retrieves a rental transaction by its unique identifier. Returns complete ren...
+- `PUT /rentals/{rentalId}` - Updates a rental transaction (typically for returns). Updates rental informat...
+
+
+For complete details, refer to the OpenAPI specification file.

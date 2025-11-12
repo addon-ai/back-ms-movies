@@ -1,0 +1,31 @@
+{% set repo = values.repoUrl | parseRepoUrl %}
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.component_id }}
+  description: ${{ values.description }}
+  annotations:
+    github.com/project-slug: ${{ repo.owner + '/' + repo.repo }}
+    backstage.io/techdocs-ref: dir:.
+    backstage.io/source-location: url:${{ values.repoUrl }}
+  tags:
+    - java
+    - spring-boot
+    - spring-boot
+    - hexagonal-architecture
+  links:
+    - url: ${{ values.repoUrl }}
+      title: Repository
+      icon: github
+    - url: ${{ values.repoUrl }}/blob/main/README.md
+      title: Documentation
+      icon: docs
+spec:
+  type: service
+  lifecycle: ${{ values.lifecycle | default("experimental") }}
+  owner: ${{ values.owner }}
+  system: ${{ values.system | default("users-system") }}
+  providesApis:
+    - ${{ values.component_id }}-api
+  dependsOn:
+    - resource:${{ values.component_id }}-database
