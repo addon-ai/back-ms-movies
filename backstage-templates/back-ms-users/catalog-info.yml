@@ -21,3 +21,16 @@ spec:
   providesApis:
     - location-api
     - user-api
+  dependsOn:
+    - resource:java-21-users
+    - resource:spring-boot-3-2-5-users
+    - resource:mapstruct-1-5-5-users
+    - resource:lombok-1-18-30-users
+    - resource:postgresql-42-7-3-users
+    - resource:h2-2-2-224-users
+    - resource:springdoc-2-1-0-users
+    - resource:maven-compiler-3-11-0-users
+    - resource:maven-surefire-3-2-5-users
+    - resource:lombok-mapstruct-binding-0-2-0-users
+    - resource:jacoco-0-8-11-users
+    - resource:flyway-10-10-0-users

@@ -1,7 +1,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: java-21
+  name: java-21-movies
   description: Java Runtime Environment version 21
   tags:
     - java
@@ -14,7 +14,7 @@ spec:
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: spring-boot-3-2-5
+  name: spring-boot-3-2-5-movies
   description: Spring Boot Framework version 3.2.5
   tags:
     - spring-boot
@@ -27,7 +27,7 @@ spec:
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: mapstruct-1-5-5
+  name: mapstruct-1-5-5-movies
   description: MapStruct mapping library version 1.5.5.Final
   tags:
     - mapstruct
@@ -40,7 +40,7 @@ spec:
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: lombok-1-18-30
+  name: lombok-1-18-30-movies
   description: Lombok code generation library version 1.18.30
   tags:
     - lombok
@@ -53,12 +53,77 @@ spec:
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: postgresql-42-7-3
+  name: postgresql-42-7-3-movies
   description: PostgreSQL JDBC Driver version 42.7.3
   tags:
     - postgresql
     - database
 spec:
   type: database-driver
+  owner: platform-team
+  system: movies-system
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: maven-compiler-3-11-0-movies
+  description: Maven Compiler Plugin version 3.11.0
+  tags:
+    - maven
+    - compiler
+spec:
+  type: library
+  owner: platform-team
+  system: movies-system
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: maven-surefire-3-2-5-movies
+  description: Maven Surefire Plugin version 3.2.5
+  tags:
+    - maven
+    - testing
+spec:
+  type: library
+  owner: platform-team
+  system: movies-system
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: lombok-mapstruct-binding-0-2-0-movies
+  description: Lombok MapStruct Binding version 0.2.0
+  tags:
+    - lombok
+    - mapstruct
+spec:
+  type: library
+  owner: platform-team
+  system: movies-system
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: jacoco-0-8-11-movies
+  description: JaCoCo Code Coverage version 0.8.11
+  tags:
+    - jacoco
+    - testing
+spec:
+  type: library
+  owner: platform-team
+  system: movies-system
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: flyway-10-10-0-movies
+  description: Flyway Database Migration version 10.10.0
+  tags:
+    - flyway
+    - database
+spec:
+  type: library
   owner: platform-team
   system: movies-system

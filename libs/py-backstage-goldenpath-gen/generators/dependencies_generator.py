@@ -21,7 +21,7 @@ class DependenciesGenerator:
         # Java runtime
         if 'java' in dependencies:
             resources.append(self._create_resource(
-                f"java-{dependencies['java']}",
+                f"java-{dependencies['java']}-{base_name}",
                 f"Java Runtime Environment version {dependencies['java']}",
                 ['java', 'runtime'],
                 'runtime',
@@ -32,7 +32,7 @@ class DependenciesGenerator:
         if 'springBoot' in dependencies:
             version = dependencies['springBoot'].replace('.', '-')
             resources.append(self._create_resource(
-                f"spring-boot-{version}",
+                f"spring-boot-{version}-{base_name}",
                 f"Spring Boot Framework version {dependencies['springBoot']}",
                 ['spring-boot', 'framework'],
                 'library',
@@ -43,7 +43,7 @@ class DependenciesGenerator:
         if 'mapstruct' in dependencies:
             version = dependencies['mapstruct'].replace('.', '-').replace('Final', '').strip('-')
             resources.append(self._create_resource(
-                f"mapstruct-{version}",
+                f"mapstruct-{version}-{base_name}",
                 f"MapStruct mapping library version {dependencies['mapstruct']}",
                 ['mapstruct', 'mapping'],
                 'library',
@@ -54,7 +54,7 @@ class DependenciesGenerator:
         if 'lombok' in dependencies:
             version = dependencies['lombok'].replace('.', '-')
             resources.append(self._create_resource(
-                f"lombok-{version}",
+                f"lombok-{version}-{base_name}",
                 f"Lombok code generation library version {dependencies['lombok']}",
                 ['lombok', 'codegen'],
                 'library',
@@ -65,7 +65,7 @@ class DependenciesGenerator:
         if 'postgresql' in dependencies:
             version = dependencies['postgresql'].replace('.', '-')
             resources.append(self._create_resource(
-                f"postgresql-{version}",
+                f"postgresql-{version}-{base_name}",
                 f"PostgreSQL JDBC Driver version {dependencies['postgresql']}",
                 ['postgresql', 'database'],
                 'database-driver',
@@ -76,7 +76,7 @@ class DependenciesGenerator:
         if 'h2' in dependencies:
             version = dependencies['h2'].replace('.', '-')
             resources.append(self._create_resource(
-                f"h2-{version}",
+                f"h2-{version}-{base_name}",
                 f"H2 Database Engine version {dependencies['h2']}",
                 ['h2', 'database'],
                 'database-driver',
@@ -87,9 +87,64 @@ class DependenciesGenerator:
         if 'springdoc' in dependencies:
             version = dependencies['springdoc'].replace('.', '-')
             resources.append(self._create_resource(
-                f"springdoc-{version}",
+                f"springdoc-{version}-{base_name}",
                 f"SpringDoc OpenAPI library version {dependencies['springdoc']}",
                 ['springdoc', 'openapi'],
+                'library',
+                system_name
+            ))
+        
+        # Maven Compiler
+        if 'mavenCompiler' in dependencies:
+            version = dependencies['mavenCompiler'].replace('.', '-')
+            resources.append(self._create_resource(
+                f"maven-compiler-{version}-{base_name}",
+                f"Maven Compiler Plugin version {dependencies['mavenCompiler']}",
+                ['maven', 'compiler'],
+                'library',
+                system_name
+            ))
+        
+        # Maven Surefire
+        if 'mavenSurefire' in dependencies:
+            version = dependencies['mavenSurefire'].replace('.', '-')
+            resources.append(self._create_resource(
+                f"maven-surefire-{version}-{base_name}",
+                f"Maven Surefire Plugin version {dependencies['mavenSurefire']}",
+                ['maven', 'testing'],
+                'library',
+                system_name
+            ))
+        
+        # Lombok MapStruct Binding
+        if 'lombokMapstructBinding' in dependencies:
+            version = dependencies['lombokMapstructBinding'].replace('.', '-')
+            resources.append(self._create_resource(
+                f"lombok-mapstruct-binding-{version}-{base_name}",
+                f"Lombok MapStruct Binding version {dependencies['lombokMapstructBinding']}",
+                ['lombok', 'mapstruct'],
+                'library',
+                system_name
+            ))
+        
+        # Jacoco
+        if 'jacoco' in dependencies:
+            version = dependencies['jacoco'].replace('.', '-')
+            resources.append(self._create_resource(
+                f"jacoco-{version}-{base_name}",
+                f"JaCoCo Code Coverage version {dependencies['jacoco']}",
+                ['jacoco', 'testing'],
+                'library',
+                system_name
+            ))
+        
+        # Flyway
+        if 'flywayDatabasePostgresql' in dependencies:
+            version = dependencies['flywayDatabasePostgresql'].replace('.', '-')
+            resources.append(self._create_resource(
+                f"flyway-{version}-{base_name}",
+                f"Flyway Database Migration version {dependencies['flywayDatabasePostgresql']}",
+                ['flyway', 'database'],
                 'library',
                 system_name
             ))

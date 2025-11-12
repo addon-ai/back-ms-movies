@@ -99,7 +99,7 @@ spec:
             f.write(collection_content)
     
     def generate_entities_location(self, github_org):
-        """Generate entities-location-wildcard.yml"""
+        """Generate entities-location.yml"""
         entities_location_content = f"""apiVersion: backstage.io/v1alpha1
 kind: Location
 metadata:
@@ -111,3 +111,17 @@ spec:
 """
         with open(os.path.join(self.output_dir, "entities-location.yml"), 'w') as f:
             f.write(entities_location_content)
+    
+    def generate_dependencies_location(self, github_org):
+        """Generate dependencies-location.yml"""
+        dependencies_location_content = f"""apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: backstage-dependencies
+  description: All project dependencies
+spec:
+  targets:
+    - https://github.com/{github_org}/backstage-templates/blob/main/*/entities/dependencies.yml
+"""
+        with open(os.path.join(self.output_dir, "dependencies-location.yml"), 'w') as f:
+            f.write(dependencies_location_content)

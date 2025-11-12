@@ -20,3 +20,5 @@ spec:
   system: {{system_name}}
   providesApis:{{#provides_apis}}
     - {{.}}{{/provides_apis}}
+  dependsOn:{{#dependencies}}
+    - resource:{{.}}{{/dependencies}}

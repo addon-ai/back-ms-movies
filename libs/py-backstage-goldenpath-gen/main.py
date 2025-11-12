@@ -56,6 +56,7 @@ class BackstageGoldenPathGenerator:
         self.root_generator.generate_org_yml()
         self.root_generator.generate_systems_yml(systems)
         self.root_generator.generate_entities_location(github_org)
+        self.root_generator.generate_dependencies_location(github_org)
         
         print(f"✅ Backstage collection files generated in {self.output_dir}/")
     
