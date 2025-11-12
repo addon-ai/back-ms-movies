@@ -1,0 +1,14 @@
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: location-reactive-api
+  description: A comprehensive service for managing user locations and geographic data with full CRUD operations. This service provides user location management (home, work, billing, shipping addresses), geographic data hierarchy (countries, regions, cities, neighborhoods), location type categorization and validation, geospatial coordinates support (latitude/longitude), and postal code and address validation.
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+spec:
+  type: openapi
+  lifecycle: experimental
+  owner: platform-team
+  system: users-system
+  definition:
+    $text: ../../openapi/LocationService.openapi.json

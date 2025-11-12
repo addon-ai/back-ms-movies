@@ -1,0 +1,153 @@
+@startuml back-ms-movies-webflux Hexagonal Architecture
+!theme plain
+title Back Ms Movies Webflux - Hexagonal Architecture
+
+left to right direction
+
+' === EXTERNAL ACTORS ===
+rectangle "External Actors" {
+  [Web Client] as WebClient
+  [Mobile App] as MobileApp
+  [API Consumer] as APIConsumer
+  [Database] as Database
+}
+
+' === Back Ms Movies Webflux SERVICE ===
+package "back-ms-movies-webflux" as ServiceMS {
+  package "Infrastructure Layer" as ServiceInfra {
+    package "Input Adapters" as ServiceInputAdapters {
+      [MovieController] as MovieController
+      [RentalController] as RentalController
+    }
+    
+    package "Output Adapters" as ServiceOutputAdapters {
+      [RentalRepositoryAdapter] as RentalRepositoryAdapter
+      [MovieRepositoryAdapter] as MovieRepositoryAdapter
+    }
+    
+    package "Persistence" as ServicePersistence {
+      [JpaRentalRepository] as JpaRentalRepository
+      [JpaMovieRepository] as JpaMovieRepository
+      
+      [MovieDbo] as MovieDbo
+      [RentalDbo] as RentalDbo
+    }
+    
+    package "Configuration" as ServiceConfig {
+      [FlywayConfiguration] as FlywayConfiguration
+      [ApplicationConfiguration] as ApplicationConfiguration
+      [OpenApiConfiguration] as OpenApiConfiguration
+      [SecurityConfiguration] as SecurityConfiguration
+    }
+    
+    package "Exceptions" as ServiceExceptions {
+      [ConflictException] as ConflictException
+      [InternalServerErrorException] as InternalServerErrorException
+      [GlobalExceptionHandler] as GlobalExceptionHandler
+      [NotFoundException] as NotFoundException
+    }
+  }
+  
+  package "Application Layer" as ServiceApplication {
+    package "Services" as ServiceServices {
+      [RentalService] as RentalService
+      [MovieService] as MovieService
+    }
+    
+    package "Mappers" as ServiceMappers {
+      [RentalMapper] as RentalMapper
+      [MovieMapper] as MovieMapper
+    }
+    
+    package "DTOs" as ServiceDTOs {
+      [Movie DTOs] as MovieDTOsGroup
+      [Rental DTOs] as RentalDTOsGroup
+    }
+    
+  }
+  
+  package "Domain Layer" as ServiceDomain {
+    package "Domain Models" as ServiceDomainModels {
+      [EntityStatus] as EntityStatusModel
+      [Rental] as RentalModel
+      [Movie] as MovieModel
+    }
+    
+    package "Input Ports" as ServiceInputPorts {
+      [RentalUseCase] as RentalUseCase
+      [MovieUseCase] as MovieUseCase
+    }
+    
+    package "Output Ports" as ServiceOutputPorts {
+      [MovieRepositoryPort] as MovieRepositoryPort
+      [RentalRepositoryPort] as RentalRepositoryPort
+    }
+  }
+}
+
+' === EXTERNAL CONNECTIONS ===
+WebClient --> ServiceInputAdapters : HTTP/REST
+MobileApp --> ServiceInputAdapters : HTTP/REST
+APIConsumer --> ServiceInputAdapters : HTTP/REST
+
+' === PACKAGE CONNECTIONS ===
+
+ServiceInputAdapters --> ServiceInputPorts : "delegates to use cases"
+
+
+ServiceServices ..|> ServiceInputPorts : "implements use cases"
+
+
+ServiceServices --> ServiceOutputPorts : "uses repository ports"
+
+
+ServiceOutputAdapters ..|> ServiceOutputPorts : "implements ports"
+
+
+ServiceOutputAdapters --> ServicePersistence : "uses JPA repositories"
+
+
+ServiceServices --> ServiceMappers : "uses mappers"
+
+
+ServiceOutputAdapters --> ServiceMappers : "uses mappers"
+
+
+ServiceServices --> ServiceDTOs : "uses DTOs"
+
+
+ServiceConfig --> ServiceInputAdapters : "configures & handles exceptions"
+
+
+ServiceConfig --> ServiceExceptions : "handles custom exceptions"
+
+ServiceDomainModels --> EntityStatusModel : "uses status"
+
+' === INTERNAL PERSISTENCE CONNECTIONS ===
+JpaRentalRepository --> RentalDbo : "manages"
+JpaMovieRepository --> MovieDbo : "manages"
+
+' === DATABASE CONNECTION ===
+ServicePersistence --> Database : "persists data"
+
+note right of ServiceMS
+  <b>Back Ms Movies Webflux Service Architecture</b>
+  • <b>3 Domain Entities</b>: EntityStatus, Rental, Movie, 
+  • <b>2 Use Cases</b>: RentalUseCase, MovieUseCase, 
+  • <b>2 Repository Ports</b>: One per entity
+  • <b>2 Services</b>: RentalService, MovieService, 
+  • <b>2 Mappers</b>: MapStruct transformations
+  • <b>4 Custom Exceptions</b>: ConflictException, InternalServerErrorException, GlobalExceptionHandler, NotFoundException, 
+  • <b>Complete CRUD</b>: All entities support full operations
+  • <b>Logging</b>: LoggingUtils used across all layers
+end note
+
+note bottom
+  <b>Hexagonal Architecture Principles</b>
+  • <b>Dependency Rule</b>: All dependencies point inward toward domain
+  • <b>Ports & Adapters</b>: External communication via interfaces
+  • <b>Domain Isolation</b>: Pure business logic without framework dependencies
+  • <b>Testability</b>: Each layer independently testable
+end note
+
+@enduml
